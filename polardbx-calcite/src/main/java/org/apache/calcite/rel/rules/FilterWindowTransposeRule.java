@@ -75,7 +75,7 @@ public class FilterWindowTransposeRule extends RelOptRule {
     super(operand, builderFactory, null);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public FilterWindowTransposeRule(
       Class<? extends Filter> filterClass,
       RelFactories.FilterFactory filterFactory,

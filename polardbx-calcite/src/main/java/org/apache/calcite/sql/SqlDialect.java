@@ -62,12 +62,12 @@ public class SqlDialect {
   public static final Context EMPTY_CONTEXT = emptyContext();
 
   /** @deprecated Use {@link AnsiSqlDialect#DEFAULT} instead. */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static final SqlDialect DUMMY =
       AnsiSqlDialect.DEFAULT;
 
   /** @deprecated Use {@link CalciteSqlDialect#DEFAULT} instead. */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static final SqlDialect CALCITE =
       CalciteSqlDialect.DEFAULT;
 
@@ -92,12 +92,12 @@ public class SqlDialect {
    *
    * @deprecated Replaced by {@link SqlDialectFactory}
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static SqlDialect create(DatabaseMetaData databaseMetaData) {
     return new SqlDialectFactoryImpl().create(databaseMetaData);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public SqlDialect(DatabaseProduct databaseProduct, String databaseProductName,
       String identifierQuoteString) {
     this(EMPTY_CONTEXT
@@ -118,7 +118,7 @@ public class SqlDialect {
    *
    * @deprecated Use {@link #SqlDialect(Context)}
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public SqlDialect(DatabaseProduct databaseProduct, String databaseProductName,
       String identifierQuoteString, NullCollation nullCollation) {
     this(EMPTY_CONTEXT
@@ -170,7 +170,7 @@ public class SqlDialect {
    * @param productVersion Product version
    * @return database product
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static DatabaseProduct getProduct(
       String productName,
       String productVersion) {
@@ -485,7 +485,7 @@ public class SqlDialect {
    * @return Database product
    * @deprecated To be removed without replacement
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public DatabaseProduct getDatabaseProduct() {
     return databaseProduct;
   }

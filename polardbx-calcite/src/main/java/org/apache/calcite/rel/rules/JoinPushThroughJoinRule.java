@@ -95,7 +95,7 @@ public class JoinPushThroughJoinRule extends RelOptRule {
     this.right = right;
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public JoinPushThroughJoinRule(String description, boolean right,
       Class<? extends Join> clazz, ProjectFactory projectFactory) {
     this(description, right, clazz, RelBuilder.proto(projectFactory));

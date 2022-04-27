@@ -137,7 +137,7 @@ public abstract class ReduceExpressionsRule extends RelOptRule {
    * an empty {@link org.apache.calcite.rel.core.Values} (if FALSE or NULL).
    */
   public static class FilterReduceExpressionsRule extends ReduceExpressionsRule {
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     public FilterReduceExpressionsRule(Class<? extends Filter> filterClass,
         RelBuilderFactory relBuilderFactory) {
       this(filterClass, true, relBuilderFactory);
@@ -264,7 +264,7 @@ public abstract class ReduceExpressionsRule extends RelOptRule {
    * Rule that reduces constants inside a {@link org.apache.calcite.rel.core.Project}.
    */
   public static class ProjectReduceExpressionsRule extends ReduceExpressionsRule {
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     public ProjectReduceExpressionsRule(Class<? extends Project> projectClass,
         RelBuilderFactory relBuilderFactory) {
       this(projectClass, true, relBuilderFactory);
@@ -301,7 +301,7 @@ public abstract class ReduceExpressionsRule extends RelOptRule {
    * Rule that reduces constants inside a {@link org.apache.calcite.rel.core.Join}.
    */
   public static class JoinReduceExpressionsRule extends ReduceExpressionsRule {
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     public JoinReduceExpressionsRule(Class<? extends Join> joinClass,
         RelBuilderFactory relBuilderFactory) {
       this(joinClass, true, relBuilderFactory);
@@ -357,7 +357,7 @@ public abstract class ReduceExpressionsRule extends RelOptRule {
    * Rule that reduces constants inside a {@link org.apache.calcite.rel.core.Calc}.
    */
   public static class CalcReduceExpressionsRule extends ReduceExpressionsRule {
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     public CalcReduceExpressionsRule(Class<? extends Calc> calcClass,
         RelBuilderFactory relBuilderFactory) {
       this(calcClass, true, relBuilderFactory);
@@ -467,7 +467,7 @@ public abstract class ReduceExpressionsRule extends RelOptRule {
     this.matchNullability = matchNullability;
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   protected ReduceExpressionsRule(Class<? extends RelNode> clazz,
       RelBuilderFactory relBuilderFactory, String description) {
     this(clazz, true, relBuilderFactory, description);
@@ -488,7 +488,7 @@ public abstract class ReduceExpressionsRule extends RelOptRule {
     return reduceExpressions(rel, expList, predicates, false, true);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   protected static boolean reduceExpressions(RelNode rel, List<RexNode> expList,
       RelOptPredicateList predicates, boolean unknownAsFalse) {
     return reduceExpressions(rel, expList, predicates, unknownAsFalse, true);
@@ -681,7 +681,7 @@ public abstract class ReduceExpressionsRule extends RelOptRule {
    *
    * @deprecated Use {@link RelOptPredicateList#constantMap}
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static <C extends RexNode> ImmutableMap<RexNode, C> predicateConstants(
       Class<C> clazz, RexBuilder rexBuilder, RelOptPredicateList predicates) {
     return RexUtil.predicateConstants(clazz, rexBuilder,

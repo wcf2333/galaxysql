@@ -158,7 +158,7 @@ public interface SqlValidatorNamespace {
    */
   SqlMonotonicity getMonotonicity(String columnName);
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   void makeNullable();
 
   /**

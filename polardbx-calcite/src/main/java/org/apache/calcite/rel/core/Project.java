@@ -128,14 +128,14 @@ public abstract class Project extends SingleRel {
     return copy(traitSet, input, projects, rowType);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public Project copy(RelTraitSet traitSet, RelNode input,
       List<RexNode> projects, RelDataType rowType, int flags) {
     Util.discard(flags);
     return copy(traitSet, input, projects, rowType);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public boolean isBoxed() {
     return true;
   }
@@ -171,7 +171,7 @@ public abstract class Project extends SingleRel {
     return Pair.zip(getProjects(), getRowType().getFieldNames());
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public int getFlags() {
     return 1;
   }
@@ -407,7 +407,7 @@ public abstract class Project extends SingleRel {
   //~ Inner Classes ----------------------------------------------------------
 
   /** No longer used. */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static class Flags {
     public static final int ANON_FIELDS = 2;
     public static final int BOXED = 1;

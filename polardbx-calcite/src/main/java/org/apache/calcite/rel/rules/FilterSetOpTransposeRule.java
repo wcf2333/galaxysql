@@ -53,7 +53,7 @@ public class FilterSetOpTransposeRule extends RelOptRule {
         relBuilderFactory, null);
   }
 
-  @Deprecated // to  be removed before 2.0
+  @Deprecated 
   public FilterSetOpTransposeRule(RelFactories.FilterFactory filterFactory) {
     this(RelBuilder.proto(Contexts.of(filterFactory)));
   }

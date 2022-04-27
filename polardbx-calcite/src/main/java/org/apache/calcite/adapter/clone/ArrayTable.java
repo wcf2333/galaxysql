@@ -811,7 +811,7 @@ class ArrayTable extends AbstractQueryableTable implements ScannableTable {
       this.collations = ImmutableList.copyOf(collations);
     }
 
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     Content(List<? extends Column> columns, int size, int sortField) {
       this(columns, size,
           sortField >= 0

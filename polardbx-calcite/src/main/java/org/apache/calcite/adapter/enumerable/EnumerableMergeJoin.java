@@ -76,7 +76,7 @@ public class EnumerableMergeJoin extends EquiJoin implements EnumerableRel {
     assert collations == null || RelCollations.contains(collations, leftKeys);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   EnumerableMergeJoin(RelOptCluster cluster, RelTraitSet traits, RelNode left,
       RelNode right, RexNode condition, ImmutableIntList leftKeys,
       ImmutableIntList rightKeys, JoinRelType joinType,

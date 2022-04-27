@@ -126,7 +126,7 @@ public class RelFieldTrimmer implements ReflectiveVisitor {
     this.relBuilder = relBuilder;
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public RelFieldTrimmer(SqlValidator validator,
       RelOptCluster cluster,
       RelFactories.ProjectFactory projectFactory,

@@ -89,7 +89,7 @@ public class MultiJoinProjectTransposeRule extends JoinProjectTransposeRule {
 
   //~ Constructors -----------------------------------------------------------
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public MultiJoinProjectTransposeRule(
       RelOptRuleOperand operand,
       String description) {

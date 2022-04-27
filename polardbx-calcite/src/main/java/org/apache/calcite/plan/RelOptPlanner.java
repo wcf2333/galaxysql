@@ -135,7 +135,7 @@ public interface RelOptPlanner {
    *
    * @param cancelFlag flag which the planner should periodically check
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   void setCancelFlag(CancelFlag cancelFlag);
 
   /**
@@ -331,7 +331,7 @@ public interface RelOptPlanner {
 
   // CHECKSTYLE: IGNORE 1
   /** @deprecated Use {@link RexExecutor} */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   interface Executor extends RexExecutor {
   }
 

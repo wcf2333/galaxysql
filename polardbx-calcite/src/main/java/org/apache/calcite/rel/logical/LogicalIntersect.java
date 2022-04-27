@@ -46,7 +46,7 @@ public final class LogicalIntersect extends Intersect {
     super(cluster, traitSet, inputs, all);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public LogicalIntersect(RelOptCluster cluster, List<RelNode> inputs,
       boolean all) {
     this(cluster, cluster.traitSetOf(Convention.NONE), inputs, all);

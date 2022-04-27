@@ -482,7 +482,7 @@ public class Bindables {
       super(cluster, traitSet, left, right, condition, variablesSet, joinType, hints);
     }
 
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     protected BindableJoin(RelOptCluster cluster, RelTraitSet traitSet,
         RelNode left, RelNode right, RexNode condition, JoinRelType joinType,
         Set<String> variablesStopped, SqlNodeList hints) {

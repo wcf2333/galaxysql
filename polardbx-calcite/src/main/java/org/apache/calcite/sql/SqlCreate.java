@@ -41,7 +41,7 @@ public abstract class SqlCreate extends SqlDdl {
     this.ifNotExists = ifNotExists;
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public SqlCreate(SqlParserPos pos, boolean replace) {
     this(SqlDdl.DDL_OPERATOR, pos, replace, false);
   }

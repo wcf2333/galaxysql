@@ -314,9 +314,9 @@ public final class SetHandler {
                         // ignore SQL_LOG_BIN，MySQL
                         // Dump会加入这种语句，下面的MySQL未必有权限
                     } else if ("TIMESTAMP".equalsIgnoreCase(key.getName())) {
-                        // ignore max_statement_time for 2.0
+                        // ignore max_statement_time
                     } else if ("MAX_STATEMENT_TIME".equalsIgnoreCase(key.getName())) {
-                        // ignore max_statement_time for 2.0
+                        // ignore max_statement_time
                     } else if ("SQL_SELECT_LIMIT".equalsIgnoreCase(key.getName())) {
                         //SQL_SELECT_LIMIT 默认值为无符号64位整型的最大值 18446744073709551615，无法转Long
                         if (isDefault(oriValue)) {

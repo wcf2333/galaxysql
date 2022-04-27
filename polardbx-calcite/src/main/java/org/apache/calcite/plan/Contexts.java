@@ -38,7 +38,7 @@ public class Contexts {
    *
    * @deprecated Use {@link #of}
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static Context withConfig(CalciteConnectionConfig config) {
     return of(config);
   }

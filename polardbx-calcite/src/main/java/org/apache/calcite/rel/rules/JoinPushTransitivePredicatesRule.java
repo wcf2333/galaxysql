@@ -55,7 +55,7 @@ public class JoinPushTransitivePredicatesRule extends RelOptRule {
     super(operand(clazz, any()), relBuilderFactory, null);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public JoinPushTransitivePredicatesRule(Class<? extends Join> clazz,
       RelFactories.FilterFactory filterFactory) {
     this(clazz, RelBuilder.proto(Contexts.of(filterFactory)));

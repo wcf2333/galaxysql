@@ -117,7 +117,7 @@ public abstract class SqlNode implements Cloneable {
     return getKind().belongsTo(category);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static SqlNode[] cloneArray(SqlNode[] nodes) {
     SqlNode[] clones = nodes.clone();
     for (int i = 0; i < clones.length; i++) {
@@ -268,7 +268,7 @@ public abstract class SqlNode implements Cloneable {
    */
   public abstract boolean equalsDeep(SqlNode node, Litmus litmus);
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public final boolean equalsDeep(SqlNode node, boolean fail) {
     return equalsDeep(node, fail ? Litmus.THROW : Litmus.IGNORE);
   }

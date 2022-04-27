@@ -37,7 +37,7 @@ public class ComparableOperandTypeChecker extends SameOperandTypeChecker {
 
   //~ Constructors -----------------------------------------------------------
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public ComparableOperandTypeChecker(int nOperands,
       RelDataTypeComparability requiredComparability) {
     this(nOperands, requiredComparability, Consistency.NONE);

@@ -330,7 +330,7 @@ public interface CalcitePrepare {
     private final long maxRowCount;
     private final Bindable<T> bindable;
 
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     public CalciteSignature(String sql, List<AvaticaParameter> parameterList,
         Map<String, Object> internalParameters, RelDataType rowType,
         List<ColumnMetaData> columns, Meta.CursorFactory cursorFactory,

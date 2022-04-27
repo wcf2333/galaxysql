@@ -87,7 +87,7 @@ public interface RelNode extends RelOptNode, RelHint, Cloneable, RelRelatedId {
    * @return List of this relational expression's child expressions
    * @see #accept(org.apache.calcite.rex.RexShuttle)
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   List<RexNode> getChildExps();
 
   /**

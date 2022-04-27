@@ -84,7 +84,7 @@ public final class LogicalTableScan extends TableScan {
     super(cluster, traitSet, table, hints,indexNode, partitions);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public LogicalTableScan(RelOptCluster cluster, RelOptTable table) {
     this(cluster, cluster.traitSetOf(Convention.NONE), table);
   }

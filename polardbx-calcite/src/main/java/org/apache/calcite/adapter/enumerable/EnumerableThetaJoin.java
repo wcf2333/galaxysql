@@ -53,7 +53,7 @@ public class EnumerableThetaJoin extends Join implements EnumerableRel {
     super(cluster, traits, left, right, condition, variablesSet, joinType, hints);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   protected EnumerableThetaJoin(RelOptCluster cluster, RelTraitSet traits,
       RelNode left, RelNode right, RexNode condition, JoinRelType joinType,
       Set<String> variablesStopped, SqlNodeList hints) throws InvalidRelException {

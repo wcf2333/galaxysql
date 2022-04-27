@@ -73,7 +73,7 @@ public class EnumerableJoin extends EquiJoin implements EnumerableRel {
         hints);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   protected EnumerableJoin(RelOptCluster cluster, RelTraitSet traits,
       RelNode left, RelNode right, RexNode condition, ImmutableIntList leftKeys,
       ImmutableIntList rightKeys, JoinRelType joinType,
@@ -100,7 +100,7 @@ public class EnumerableJoin extends EquiJoin implements EnumerableRel {
         leftKeys, rightKeys, variablesSet, joinType, hints);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static EnumerableJoin create(
       RelNode left,
       RelNode right,

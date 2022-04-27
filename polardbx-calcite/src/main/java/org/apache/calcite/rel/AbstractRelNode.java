@@ -340,7 +340,7 @@ public abstract class AbstractRelNode implements RelNode {
     return "rel#" + id + ':' + getDigest();
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   @Override public final String getDescription() {
     return this.toString();
   }

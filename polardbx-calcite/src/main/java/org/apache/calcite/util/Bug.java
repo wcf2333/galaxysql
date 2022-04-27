@@ -198,7 +198,7 @@ public abstract class Bug {
    *
    * <p>If the intended change is that a class or member be removed, flag
    * instead using a {@link Deprecated} annotation followed by a comment such as
-   * "to be removed before 2.0".
+   * "".
    */
   public static boolean upgrade(String remark) {
     Util.discard(remark);

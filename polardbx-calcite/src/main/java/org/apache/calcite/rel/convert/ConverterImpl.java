@@ -67,7 +67,7 @@ public abstract class ConverterImpl extends SingleRel
     return planner.getCostFactory().makeCost(dRows, dCpu, dMemory, dIo, dNet);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   protected Error cannotImplement() {
     return new AssertionError(getClass() + " cannot convert from "
         + inTraits + " traits");

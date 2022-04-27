@@ -295,7 +295,7 @@ public class Util {
    *
    * @deprecated Use {@link Objects#hash(Object...)}
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static int hash(
       int i,
       int j) {
@@ -308,7 +308,7 @@ public class Util {
    *
    * @deprecated Use {@link Objects#hash(Object...)}
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static int hash(
       int h,
       Object o) {
@@ -322,7 +322,7 @@ public class Util {
    *
    * @deprecated Use {@link Objects#hash(Object...)}
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static int hashArray(
       int h,
       Object[] a) {
@@ -338,7 +338,7 @@ public class Util {
    *
    * @deprecated Use {@link org.apache.calcite.runtime.Utilities#hashCode(double)}
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static int hashCode(double v) {
     long bits = Double.doubleToLongBits(v);
     return (int) (bits ^ (bits >>> 32));
@@ -616,7 +616,7 @@ public class Util {
   /**
    * Creates a file-protocol URL for the given file.
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static URL toURL(File file) throws MalformedURLException {
     String path = file.getAbsolutePath();
 
@@ -641,7 +641,7 @@ public class Util {
    * Gets a timestamp string for use in file names. The generated timestamp
    * string reflects the current time.
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static String getFileTimestamp() {
     SimpleDateFormat sdf =
         new SimpleDateFormat(FILE_TIMESTAMP_FORMAT, Locale.ROOT);
@@ -736,7 +736,7 @@ public class Util {
    * @param iter iterator to materialize
    * @return materialized list
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static <T> List<T> toList(Iterator<T> iter) {
     List<T> list = new ArrayList<>();
     while (iter.hasNext()) {
@@ -802,20 +802,20 @@ public class Util {
   }
 
   /** @deprecated Throw new {@link AssertionError} */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static Error newInternal() {
     return new AssertionError("(unknown cause)");
   }
 
   /** @deprecated Throw new {@link AssertionError} */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static Error newInternal(String s) {
     return new AssertionError(s);
   }
 
   /** @deprecated Throw new {@link RuntimeException} if checked; throw raw
    * exception if unchecked or {@link Error} */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static Error newInternal(Throwable e) {
     return new AssertionError(e);
   }
@@ -847,7 +847,7 @@ public class Util {
    *
    * @return a non-null string containing all messages of the exception
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static String getMessages(Throwable t) {
     StringBuilder sb = new StringBuilder();
     for (Throwable curr = t; curr != null; curr = curr.getCause()) {
@@ -871,7 +871,7 @@ public class Util {
    *
    * @deprecated Use {@link com.google.common.base.Throwables#getStackTraceAsString(Throwable)}
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static String getStackTrace(Throwable t) {
     final StringWriter sw = new StringWriter();
     final PrintWriter pw = new PrintWriter(sw);
@@ -882,7 +882,7 @@ public class Util {
 
   /** @deprecated Use {@link Preconditions#checkArgument}
    * or {@link Preconditions#checkNotNull(Object)} */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static void pre(boolean b, String description) {
     if (!b) {
       throw new AssertionError("pre-condition failed: " + description);
@@ -891,7 +891,7 @@ public class Util {
 
   /** @deprecated Use {@link Preconditions#checkArgument}
    * or {@link Preconditions#checkNotNull(Object)} */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static void post(boolean b, String description) {
     if (!b) {
       throw new AssertionError("post-condition failed: " + description);
@@ -899,7 +899,7 @@ public class Util {
   }
 
   /** @deprecated Use {@link Preconditions#checkArgument} */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static void permAssert(boolean b, String description) {
     if (!b) {
       throw new AssertionError("invariant violated: " + description);
@@ -1030,7 +1030,7 @@ public class Util {
    * @param reader reader to read from
    * @return reader contents as string
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static String readAllAsString(Reader reader) throws IOException {
     StringBuilder sb = new StringBuilder();
     char[] buf = new char[4096];
@@ -1051,7 +1051,7 @@ public class Util {
    *
    * @param jar jar to close
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static void squelchJar(JarFile jar) {
     try {
       if (jar != null) {
@@ -1069,7 +1069,7 @@ public class Util {
    *
    * @param stream stream to close
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static void squelchStream(InputStream stream) {
     try {
       if (stream != null) {
@@ -1089,7 +1089,7 @@ public class Util {
    *
    * @param stream stream to close
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static void squelchStream(OutputStream stream) {
     try {
       if (stream != null) {
@@ -1107,7 +1107,7 @@ public class Util {
    *
    * @param reader reader to close
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static void squelchReader(Reader reader) {
     try {
       if (reader != null) {
@@ -1127,7 +1127,7 @@ public class Util {
    *
    * @param writer writer to close
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static void squelchWriter(Writer writer) {
     try {
       if (writer != null) {
@@ -1145,7 +1145,7 @@ public class Util {
    *
    * @param stmt stmt to close
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static void squelchStmt(Statement stmt) {
     try {
       if (stmt != null) {
@@ -1163,7 +1163,7 @@ public class Util {
    *
    * @param connection connection to close
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static void squelchConnection(Connection connection) {
     try {
       if (connection != null) {
@@ -1180,7 +1180,7 @@ public class Util {
    * @param s string to be trimmed
    * @return trimmed string
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static String rtrim(String s) {
     int n = s.length() - 1;
     if (n >= 0) {
@@ -1205,7 +1205,7 @@ public class Util {
    *
    * @deprecated Use {@link Spaces#padRight(String, int)}
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static String rpad(String s, int len) {
     if (s.length() >= len) {
       return s;

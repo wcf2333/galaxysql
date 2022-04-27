@@ -77,7 +77,7 @@ public final class LogicalCalc extends Calc {
     super(cluster, traitSet, child, program);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public LogicalCalc(
       RelOptCluster cluster,
       RelTraitSet traitSet,

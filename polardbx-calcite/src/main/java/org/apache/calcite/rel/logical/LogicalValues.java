@@ -74,7 +74,7 @@ public class LogicalValues extends Values {
     this(cluster, traitSet, rowType, tuples, null);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public LogicalValues(
       RelOptCluster cluster,
       RelDataType rowType,

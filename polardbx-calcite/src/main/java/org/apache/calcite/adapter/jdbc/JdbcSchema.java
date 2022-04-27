@@ -172,7 +172,7 @@ public class JdbcSchema implements Schema {
    *
    * @deprecated Use {@link #createDialect(SqlDialectFactory, DataSource)} instead
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static SqlDialect createDialect(DataSource dataSource) {
     return createDialect(new SqlDialectFactoryImpl(), dataSource);
   }

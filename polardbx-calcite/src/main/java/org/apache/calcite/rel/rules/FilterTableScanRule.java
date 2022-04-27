@@ -94,7 +94,7 @@ public abstract class FilterTableScanRule extends RelOptRule {
 
   //~ Constructors -----------------------------------------------------------
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   protected FilterTableScanRule(RelOptRuleOperand operand, String description) {
     this(operand, RelFactories.LOGICAL_BUILDER, description);
   }

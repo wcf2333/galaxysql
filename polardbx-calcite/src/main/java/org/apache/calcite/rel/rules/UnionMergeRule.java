@@ -62,7 +62,7 @@ public class UnionMergeRule extends RelOptRule {
         relBuilderFactory, description);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public UnionMergeRule(Class<? extends Union> unionClazz,
       RelFactories.SetOpFactory setOpFactory) {
     this(unionClazz, null, RelBuilder.proto(setOpFactory));

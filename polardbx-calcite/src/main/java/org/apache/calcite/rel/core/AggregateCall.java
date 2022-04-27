@@ -61,7 +61,7 @@ public class AggregateCall {
    * @param type        Result type
    * @param name        Name (may be null)
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public AggregateCall(
       SqlAggFunction aggFunction,
       boolean distinct,
@@ -101,7 +101,7 @@ public class AggregateCall {
 
   //~ Methods ----------------------------------------------------------------
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static AggregateCall create(SqlAggFunction aggFunction,
       boolean distinct, List<Integer> argList, int groupCount, RelNode input,
       RelDataType type, String name) {
@@ -109,7 +109,7 @@ public class AggregateCall {
         type, name);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static AggregateCall create(SqlAggFunction aggFunction,
       boolean distinct, List<Integer> argList, int filterArg, int groupCount,
       RelNode input, RelDataType type, String name) {
@@ -136,7 +136,7 @@ public class AggregateCall {
         name);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static AggregateCall create(SqlAggFunction aggFunction,
       boolean distinct, List<Integer> argList, int filterArg, RelDataType type,
       String name) {
@@ -302,7 +302,7 @@ public class AggregateCall {
             filterArg, type, newName);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public AggregateCall copy(List<Integer> args) {
     return copy(args, filterArg);
   }

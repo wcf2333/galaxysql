@@ -39,10 +39,10 @@ import javax.annotation.Nonnull;
 public class RelCollationImpl implements RelCollation {
   //~ Static fields/initializers ---------------------------------------------
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static final RelCollation EMPTY = RelCollations.EMPTY;
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static final RelCollation PRESERVE = RelCollations.PRESERVE;
 
   //~ Instance fields --------------------------------------------------------
@@ -55,12 +55,12 @@ public class RelCollationImpl implements RelCollation {
     this.fieldCollations = fieldCollations;
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RelCollation of(RelFieldCollation... fieldCollations) {
     return RelCollations.of(fieldCollations);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RelCollation of(List<RelFieldCollation> fieldCollations) {
     return RelCollations.of(fieldCollations);
   }
@@ -168,12 +168,12 @@ public class RelCollationImpl implements RelCollation {
     }
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static List<RelCollation> createSingleton(int fieldIndex) {
     return RelCollations.createSingleton(fieldIndex);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static boolean isValid(
       RelDataType rowType,
       List<RelCollation> collationList,
@@ -181,14 +181,14 @@ public class RelCollationImpl implements RelCollation {
     return RelCollations.isValid(rowType, collationList, fail);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static boolean equal(
       List<RelCollation> collationList1,
       List<RelCollation> collationList2) {
     return RelCollations.equal(collationList1, collationList2);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static List<Integer> ordinals(RelCollation collation) {
     return RelCollations.ordinals(collation);
   }

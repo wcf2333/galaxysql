@@ -787,7 +787,7 @@ public class RexProgram {
     return builder.getProgram(false);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public RexProgram normalize(RexBuilder rexBuilder, boolean simplify) {
     final RelOptPredicateList predicates = RelOptPredicateList.EMPTY;
     return normalize(rexBuilder, simplify

@@ -96,7 +96,7 @@ public class FlatLists {
    * @param <T> Element type
    * @return List containing the given members
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static <T> List<T> copy(T... t) {
     return flatListNotComparable(t);
   }

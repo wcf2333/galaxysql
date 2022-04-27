@@ -96,7 +96,7 @@ public interface RelDataTypeFactory {
    * @param fieldInfo callback for field information
    * @return canonical struct type descriptor
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   RelDataType createStructType(FieldInfo fieldInfo);
 
   /**
@@ -338,7 +338,7 @@ public interface RelDataTypeFactory {
   /**
    * Callback that provides enough information to create fields.
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   interface FieldInfo {
     /**
      * Returns the number of fields.

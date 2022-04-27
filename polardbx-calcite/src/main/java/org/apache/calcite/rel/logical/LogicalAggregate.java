@@ -73,7 +73,7 @@ public final class LogicalAggregate extends Aggregate {
     super(cluster, traitSet, child, indicator, groupSet, groupSets, aggCalls);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public LogicalAggregate(
       RelOptCluster cluster,
       RelNode child,
@@ -99,7 +99,7 @@ public final class LogicalAggregate extends Aggregate {
     return create_(input, false, groupSet, groupSets, aggCalls);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static LogicalAggregate create(final RelNode input,
       boolean indicator,
       ImmutableBitSet groupSet,

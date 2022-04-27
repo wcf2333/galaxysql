@@ -32,7 +32,7 @@ import org.apache.calcite.sql.type.ReturnTypes;
  * @deprecated Now that {@code GROUPING} has the same functionality,
  * this function is deprecated.
  */
-@Deprecated // to be removed before 2.0
+@Deprecated 
 class SqlGroupingIdFunction extends SqlAbstractGroupFunction {
   SqlGroupingIdFunction() {
     //noinspection deprecation

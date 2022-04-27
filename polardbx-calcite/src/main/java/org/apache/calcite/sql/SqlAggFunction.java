@@ -38,7 +38,7 @@ public abstract class SqlAggFunction extends SqlFunction implements Context {
   //~ Constructors -----------------------------------------------------------
 
   /** Creates a built-in SqlAggFunction. */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   protected SqlAggFunction(
       String name,
       SqlKind kind,
@@ -52,7 +52,7 @@ public abstract class SqlAggFunction extends SqlFunction implements Context {
   }
 
   /** Creates a user-defined SqlAggFunction. */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   protected SqlAggFunction(
       String name,
       SqlIdentifier sqlIdentifier,
@@ -116,14 +116,14 @@ public abstract class SqlAggFunction extends SqlFunction implements Context {
     return requiresOver;
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public List<RelDataType> getParameterTypes(RelDataTypeFactory typeFactory) {
-    throw new UnsupportedOperationException("remove before calcite-2.0");
+    throw new UnsupportedOperationException("");
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public RelDataType getReturnType(RelDataTypeFactory typeFactory) {
-    throw new UnsupportedOperationException("remove before calcite-2.0");
+    throw new UnsupportedOperationException("");
   }
 
   /** Whether this aggregate function allows a {@code FILTER (WHERE ...)}

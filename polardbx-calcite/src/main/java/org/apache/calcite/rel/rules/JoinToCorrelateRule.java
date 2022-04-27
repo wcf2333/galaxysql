@@ -73,7 +73,7 @@ public class JoinToCorrelateRule extends RelOptRule {
     super(operand(LogicalJoin.class, any()), relBuilderFactory, null);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   protected JoinToCorrelateRule(RelFactories.FilterFactory filterFactory) {
     this(RelBuilder.proto(Contexts.of(filterFactory)));
   }

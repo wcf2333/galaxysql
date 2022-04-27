@@ -74,7 +74,7 @@ public class AggregateUnionTransposeRule extends RelOptRule {
         relBuilderFactory, null);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public AggregateUnionTransposeRule(Class<? extends Aggregate> aggregateClass,
       RelFactories.AggregateFactory aggregateFactory,
       Class<? extends Union> unionClass,

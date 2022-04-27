@@ -86,7 +86,7 @@ public interface SqlValidatorCatalogReader extends Wrapper {
 
   /** @deprecated Use
    * {@link #nameMatcher()}.{@link SqlNameMatcher#field(RelDataType, String)} */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   RelDataTypeField field(RelDataType rowType, String alias);
 
   /** Returns an implementation of
@@ -96,7 +96,7 @@ public interface SqlValidatorCatalogReader extends Wrapper {
 
   /** @deprecated Use
    * {@link #nameMatcher()}.{@link SqlNameMatcher#matches(String, String)} */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   boolean matches(String string, String name);
 
   RelDataType createTypeFromProjection(RelDataType type,
@@ -104,7 +104,7 @@ public interface SqlValidatorCatalogReader extends Wrapper {
 
   /** @deprecated Use
    * {@link #nameMatcher()}.{@link SqlNameMatcher#isCaseSensitive()} */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   boolean isCaseSensitive();
 
   /** Returns the root namespace for name resolution. */

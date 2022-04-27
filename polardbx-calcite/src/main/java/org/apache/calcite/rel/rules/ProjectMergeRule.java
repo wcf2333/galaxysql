@@ -68,7 +68,7 @@ public class ProjectMergeRule extends RelOptRule {
         this.force = force;
     }
 
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     public ProjectMergeRule(boolean force, ProjectFactory projectFactory) {
         this(force, RelBuilder.proto(projectFactory));
     }

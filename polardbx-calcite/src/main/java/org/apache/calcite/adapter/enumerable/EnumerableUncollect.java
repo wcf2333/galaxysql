@@ -37,7 +37,7 @@ import java.util.List;
 /** Implementation of {@link org.apache.calcite.rel.core.Uncollect} in
  * {@link org.apache.calcite.adapter.enumerable.EnumerableConvention enumerable calling convention}. */
 public class EnumerableUncollect extends Uncollect implements EnumerableRel {
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public EnumerableUncollect(RelOptCluster cluster, RelTraitSet traitSet,
       RelNode child) {
     this(cluster, traitSet, child, false);

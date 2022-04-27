@@ -26,7 +26,7 @@ import java.util.List;
  * Extension to {@link ArrayList} to help build an array of <code>int</code>
  * values.
  */
-@Deprecated // to be removed before 2.0
+@Deprecated 
 public class IntList extends ArrayList<Integer> {
   //~ Methods ----------------------------------------------------------------
 
@@ -43,7 +43,7 @@ public class IntList extends ArrayList<Integer> {
    *
    * @deprecated Use {@link Ints#toArray(java.util.Collection)}
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static int[] toArray(List<Integer> integers) {
     return Ints.toArray(integers);
   }
@@ -57,7 +57,7 @@ public class IntList extends ArrayList<Integer> {
    * @param args Array of primitive <code>int</code> values
    * @return List backed by array
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static List<Integer> asList(final int[] args) {
     return Ints.asList(args);
   }

@@ -72,7 +72,7 @@ public class FilterProjectTransposeRule extends RelOptRule {
         copyFilter, copyProject, relBuilderFactory);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public FilterProjectTransposeRule(
       Class<? extends Filter> filterClass,
       RelFactories.FilterFactory filterFactory,

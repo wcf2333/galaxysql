@@ -826,7 +826,7 @@ public abstract class SqlTypeUtil {
      * @return true if type has a representation as a Java primitive (ignoring
      * nullability)
      */
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     public static boolean isJavaPrimitive(RelDataType type) {
         SqlTypeName typeName = type.getSqlTypeName();
         if (typeName == null) {
@@ -852,7 +852,7 @@ public abstract class SqlTypeUtil {
     /**
      * @return class name of the wrapper for the primitive data type.
      */
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     public static String getPrimitiveWrapperJavaClassName(RelDataType type) {
         if (type == null) {
             return null;
@@ -874,7 +874,7 @@ public abstract class SqlTypeUtil {
     /**
      * @return class name of the numeric data type.
      */
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     public static String getNumericJavaClassName(RelDataType type) {
         if (type == null) {
             return null;

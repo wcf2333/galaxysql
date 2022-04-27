@@ -46,7 +46,7 @@ public class UnionToDistinctRule extends RelOptRule {
     super(operand(unionClazz, any()), relBuilderFactory, null);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public UnionToDistinctRule(Class<? extends Union> unionClazz,
       RelFactories.SetOpFactory setOpFactory) {
     this(unionClazz, RelBuilder.proto(setOpFactory));

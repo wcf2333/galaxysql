@@ -423,7 +423,7 @@ public class SqlLiteral extends SqlNode {
   }
 
   /** Returns the value as a symbol. */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public <E extends Enum<E>> E symbolValue_() {
     //noinspection unchecked
     return (E) value;
@@ -529,7 +529,7 @@ public class SqlLiteral extends SqlNode {
    *
    * @deprecated Use {@link #value(SqlNode)}
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static String stringValue(SqlNode node) {
     if (node instanceof SqlLiteral) {
       SqlLiteral literal = (SqlLiteral) node;
@@ -776,7 +776,7 @@ public class SqlLiteral extends SqlNode {
    *
    * @return -1, 0 or 1
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public int signum() {
     return bigDecimalValue().compareTo(
         BigDecimal.ZERO);
@@ -810,7 +810,7 @@ public class SqlLiteral extends SqlNode {
         }
     }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public String getStringValue() {
     return ((NlsString) value).getValue();
   }
@@ -902,7 +902,7 @@ public class SqlLiteral extends SqlNode {
     }
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static SqlDateLiteral createDate(
       Calendar calendar,
       SqlParserPos pos) {
@@ -915,7 +915,7 @@ public class SqlLiteral extends SqlNode {
     return new SqlDateLiteral(date, pos);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static SqlTimestampLiteral createTimestamp(
       Calendar calendar,
       int precision,
@@ -930,7 +930,7 @@ public class SqlLiteral extends SqlNode {
     return new SqlTimestampLiteral(ts, precision, false, pos);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static SqlTimeLiteral createTime(
       Calendar calendar,
       int precision,
@@ -1242,7 +1242,7 @@ public class SqlLiteral extends SqlNode {
    * unparsed, which is sometimes not the same as the enumerated value's name
    * (e.g. "UNBOUNDED PRECEDING" versus "UnboundedPreceeding").
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public interface SqlSymbol {
     String name();
 

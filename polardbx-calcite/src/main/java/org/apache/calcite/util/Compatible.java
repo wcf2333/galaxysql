@@ -61,7 +61,7 @@ public interface Compatible {
    *
    * <p>This method is available in JDK 1.7 and above, and in
    * {@link org.apache.calcite.jdbc.CalciteConnection} in all JDK versions. */
-  @SuppressWarnings("unused") @Deprecated // to be removed before 2.0
+  @SuppressWarnings("unused") @Deprecated 
   void setSchema(Connection connection, String schema);
 
   /** Calls the {@link Method}.{@code getParameters()[i].getName()} method

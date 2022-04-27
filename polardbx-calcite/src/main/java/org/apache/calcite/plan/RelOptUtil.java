@@ -293,7 +293,7 @@ public abstract class RelOptUtil {
     return visitor.variables;
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static List<CorrelationId> getVariablesSetAndUsed(RelNode rel0,
       RelNode rel1) {
     Set<CorrelationId> set = getVariablesSet(rel0);
@@ -501,7 +501,7 @@ public abstract class RelOptUtil {
     return mapping;
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RelNode createExistsPlan(
       RelOptCluster cluster,
       RelNode seekRel,
@@ -636,7 +636,7 @@ public abstract class RelOptUtil {
     }
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RelNode createRenameRel(
       RelDataType outputType,
       RelNode rel) {
@@ -665,14 +665,14 @@ public abstract class RelOptUtil {
     return createProject(rel, Pair.left(renames), Pair.right(renames));
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RelNode createFilter(RelNode child, RexNode condition) {
     final RelFactories.FilterFactory factory =
         RelFactories.DEFAULT_FILTER_FACTORY;
     return factory.createFilter(child, condition);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RelNode createFilter(RelNode child, RexNode condition,
       RelFactories.FilterFactory filterFactory) {
     return filterFactory.createFilter(child, condition);
@@ -702,7 +702,7 @@ public abstract class RelOptUtil {
     }
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RelNode createNullFilter(
       RelNode rel,
       Integer[] fieldOrdinals) {
@@ -828,14 +828,14 @@ public abstract class RelOptUtil {
   }
 
   /** @deprecated Use {@link RelBuilder#distinct()}. */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RelNode createDistinctRel(RelNode rel) {
     return LogicalAggregate.create(rel,
         ImmutableBitSet.range(rel.getRowType().getFieldCount()), null,
         ImmutableList.<AggregateCall>of());
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static boolean analyzeSimpleEquiJoin(
       LogicalJoin join,
       int[] joinFieldOrdinals) {
@@ -928,7 +928,7 @@ public abstract class RelOptUtil {
         left.getCluster().getRexBuilder(), nonEquiList, false);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static boolean isEqui(
       RelNode left,
       RelNode right,
@@ -1034,7 +1034,7 @@ public abstract class RelOptUtil {
         inputs.get(0).getCluster().getRexBuilder(), nonEquiList, false);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RexNode splitCorrelatedFilterCondition(
       LogicalFilter filter,
       List<RexInputRef> joinKeys,
@@ -1616,7 +1616,7 @@ public abstract class RelOptUtil {
     return call;
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static void projectJoinInputs(
       RelNode[] inputRels,
       List<RexNode> leftJoinKeys,
@@ -1715,7 +1715,7 @@ public abstract class RelOptUtil {
     inputRels[1] = rightRel;
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RelNode createProjectJoinRel(
       List<Integer> outputProj,
       RelNode joinRel) {
@@ -1807,7 +1807,7 @@ public abstract class RelOptUtil {
     return sw.toString();
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static String dumpPlan(
       String header,
       RelNode rel,
@@ -2031,7 +2031,7 @@ public abstract class RelOptUtil {
     return sw.toString();
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RelNode renameIfNecessary(
       RelNode rel,
       RelDataType desiredRowType) {
@@ -2590,7 +2590,7 @@ public abstract class RelOptUtil {
     }
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static boolean checkProjAndChildInputs(
       Project project,
       boolean checkNames) {
@@ -2658,7 +2658,7 @@ public abstract class RelOptUtil {
     return exps;
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RexNode pushFilterPastProject(RexNode filter,
       final Project projRel) {
     return pushPastProject(filter, projRel);
@@ -3067,7 +3067,7 @@ public abstract class RelOptUtil {
     return relBuilder.build();
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RelNode createRename(
       RelNode rel,
       List<String> fieldNames) {
@@ -3207,7 +3207,7 @@ public abstract class RelOptUtil {
         RelBuilder.proto(factory).create(child.getCluster(), null));
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RelNode projectMapping(
       RelNode rel,
       Mapping mapping,
@@ -3488,7 +3488,7 @@ public abstract class RelOptUtil {
     return pushDownJoinConditions(originalJoin, RelFactories.LOGICAL_BUILDER);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RelNode pushDownJoinConditions(Join originalJoin,
       RelFactories.ProjectFactory projectFactory) {
     return pushDownJoinConditions(

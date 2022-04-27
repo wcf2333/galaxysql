@@ -53,7 +53,7 @@ public class SqlFirstLastValueAggFunction extends SqlAggFunction {
         || kind == SqlKind.LAST_VALUE);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public SqlFirstLastValueAggFunction(boolean firstFlag) {
     this(firstFlag ? SqlKind.FIRST_VALUE : SqlKind.LAST_VALUE);
   }

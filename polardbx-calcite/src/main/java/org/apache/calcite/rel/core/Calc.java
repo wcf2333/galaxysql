@@ -67,7 +67,7 @@ public abstract class Calc extends SingleRel {
     assert isValid(Litmus.THROW, null);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   protected Calc(
       RelOptCluster cluster,
       RelTraitSet traits,
@@ -100,7 +100,7 @@ public abstract class Calc extends SingleRel {
       RelNode child,
       RexProgram program);
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public Calc copy(
       RelTraitSet traitSet,
       RelNode child,

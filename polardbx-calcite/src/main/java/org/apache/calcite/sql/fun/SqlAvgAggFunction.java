@@ -55,7 +55,7 @@ public class SqlAvgAggFunction extends SqlAggFunction {
     Preconditions.checkArgument(SqlKind.AVG_AGG_FUNCTIONS.contains(kind), "unsupported sql kind");
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public SqlAvgAggFunction(
       RelDataType type,
       Subtype subtype) {
@@ -69,13 +69,13 @@ public class SqlAvgAggFunction extends SqlAggFunction {
    *
    * @return Subtype
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public Subtype getSubtype() {
     return Subtype.valueOf(kind.name());
   }
 
   /** Sub-type of aggregate function. */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public enum Subtype {
     AVG,
     STDDEV_POP,

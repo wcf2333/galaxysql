@@ -56,7 +56,7 @@ public class RelOptCluster {
   /**
    * Creates a cluster.
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   RelOptCluster(
       RelOptQuery query,
       RelOptPlanner planner,
@@ -97,17 +97,17 @@ public class RelOptCluster {
 
   //~ Methods ----------------------------------------------------------------
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public RelOptQuery getQuery() {
     return new RelOptQuery(planner, nextCorrel, mapCorrelToRel);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public RexNode getOriginalExpression() {
     return originalExpression;
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public void setOriginalExpression(RexNode originalExpression) {
     this.originalExpression = originalExpression;
   }
@@ -186,7 +186,7 @@ public class RelOptCluster {
 
   /** @deprecated For {@code traitSetOf(t1, t2)},
    * use {@link #traitSet}().replace(t1).replace(t2). */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public RelTraitSet traitSetOf(RelTrait... traits) {
     RelTraitSet traitSet = emptyTraitSet;
     for (RelTrait trait : traits) {

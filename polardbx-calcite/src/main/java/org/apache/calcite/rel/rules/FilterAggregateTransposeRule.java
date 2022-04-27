@@ -77,7 +77,7 @@ public class FilterAggregateTransposeRule extends RelOptRule {
     super(operand, builderFactory, null);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public FilterAggregateTransposeRule(
       Class<? extends Filter> filterClass,
       RelFactories.FilterFactory filterFactory,

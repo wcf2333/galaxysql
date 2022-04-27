@@ -76,7 +76,7 @@ public class EnumerableCalc extends Calc implements EnumerableRel {
     assert !program.containsAggs();
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public EnumerableCalc(
       RelOptCluster cluster,
       RelTraitSet traitSet,

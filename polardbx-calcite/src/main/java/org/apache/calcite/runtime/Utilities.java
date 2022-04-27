@@ -30,7 +30,7 @@ public class Utilities {
   }
 
   /** @deprecated Use {@link java.util.Objects#equals}. */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static boolean equal(Object o0, Object o1) {
     // Same as java.lang.Objects.equals (JDK 1.7 and later)
     // and com.google.common.base.Objects.equal

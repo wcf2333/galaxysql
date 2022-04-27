@@ -68,7 +68,7 @@ public class SqlInOperator extends SqlBinaryOperator {
     // ----------------------------------------------------------------
 
     @Deprecated
-    // to be removed before 2.0
+    
     public boolean isNotIn() {
         return kind == SqlKind.NOT_IN;
     }

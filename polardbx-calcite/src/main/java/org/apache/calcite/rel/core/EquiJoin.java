@@ -44,7 +44,7 @@ public abstract class EquiJoin extends Join {
     this.rightKeys = Preconditions.checkNotNull(rightKeys);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public EquiJoin(RelOptCluster cluster, RelTraitSet traits, RelNode left,
       RelNode right, RexNode condition, ImmutableIntList leftKeys,
       ImmutableIntList rightKeys, JoinRelType joinType,

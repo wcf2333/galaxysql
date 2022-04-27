@@ -50,7 +50,7 @@ public class ProjectSortTransposeRule extends RelOptRule {
         relBuilderFactory, null);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   protected ProjectSortTransposeRule(RelOptRuleOperand operand) {
     this(operand, RelFactories.LOGICAL_BUILDER, null);
   }

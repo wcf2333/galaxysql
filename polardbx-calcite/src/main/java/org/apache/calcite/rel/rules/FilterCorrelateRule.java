@@ -60,7 +60,7 @@ public class FilterCorrelateRule extends RelOptRule {
    * Creates a FilterCorrelateRule with an explicit root operand and
    * factories.
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public FilterCorrelateRule(RelFactories.FilterFactory filterFactory,
       RelFactories.ProjectFactory projectFactory) {
     this(RelBuilder.proto(filterFactory, projectFactory));

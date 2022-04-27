@@ -51,7 +51,7 @@ public interface SqlValidatorTable extends Wrapper {
   /**
    * Returns whether the ordinal column has a default value.
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   boolean columnHasDefaultValue(RelDataType rowType, int ordinal,
       InitializerContext initializerContext);
 

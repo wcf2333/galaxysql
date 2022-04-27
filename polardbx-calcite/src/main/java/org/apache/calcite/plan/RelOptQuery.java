@@ -56,7 +56,7 @@ public class RelOptQuery {
    *
    * @param planner Planner
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public RelOptQuery(RelOptPlanner planner) {
     this(planner, new AtomicInteger(0), new HashMap<String, RelNode>());
   }
@@ -78,7 +78,7 @@ public class RelOptQuery {
    * @param correlName Name of correlating variable
    * @return Correlating variable ordinal
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static int getCorrelOrdinal(String correlName) {
     assert correlName.startsWith(CORREL_PREFIX);
     return Integer.parseInt(correlName.substring(CORREL_PREFIX.length()));
@@ -91,7 +91,7 @@ public class RelOptQuery {
    * @param rexBuilder  Expression builder
    * @return New cluster
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public RelOptCluster createCluster(
       RelDataTypeFactory typeFactory,
       RexBuilder rexBuilder) {
@@ -105,7 +105,7 @@ public class RelOptQuery {
    *
    * @deprecated Use {@link RelOptCluster#createCorrel()}
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public String createCorrel() {
     int n = nextCorrel.getAndIncrement();
     return CORREL_PREFIX + n;

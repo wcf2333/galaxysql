@@ -45,7 +45,7 @@ public final class LogicalMinus extends Minus {
     super(cluster, traitSet, inputs, all);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public LogicalMinus(RelOptCluster cluster, List<RelNode> inputs,
       boolean all) {
     this(cluster, cluster.traitSetOf(Convention.NONE), inputs, all);

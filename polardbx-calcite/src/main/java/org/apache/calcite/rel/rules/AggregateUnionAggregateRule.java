@@ -58,7 +58,7 @@ public class AggregateUnionAggregateRule extends RelOptRule {
         relBuilderFactory, null);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public AggregateUnionAggregateRule(Class<? extends Aggregate> aggregateClass,
       RelFactories.AggregateFactory aggregateFactory,
       Class<? extends Union> unionClass,

@@ -237,7 +237,7 @@ public class SqlValidatorUtil {
     return output.build();
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RelDataTypeField lookupField(boolean caseSensitive,
       final RelDataType rowType, String columnName) {
     return rowType.getField(columnName, caseSensitive, false);
@@ -357,7 +357,7 @@ public class SqlValidatorUtil {
   /**
    * Factory method for {@link SqlValidator}, with default conformance.
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static SqlValidatorWithHints newValidator(
       SqlOperatorTable opTab,
       SqlValidatorCatalogReader catalogReader,
@@ -401,7 +401,7 @@ public class SqlValidatorUtil {
    * @param nameList List of strings
    * @return List of unique strings
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static List<String> uniquify(List<String> nameList) {
     return uniquify(nameList, EXPR_SUGGESTER, true);
   }
@@ -419,7 +419,7 @@ public class SqlValidatorUtil {
    * @param suggester How to generate new names if duplicate names are found
    * @return List of unique strings
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static List<String> uniquify(List<String> nameList, Suggester suggester) {
     return uniquify(nameList, suggester, true);
   }
@@ -1310,7 +1310,7 @@ public class SqlValidatorUtil {
    * Walks over an expression, copying every node, and fully-qualifying every
    * identifier.
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static class DeepCopier extends SqlScopedShuttle {
     DeepCopier(SqlValidatorScope scope) {
       super(scope);

@@ -72,7 +72,7 @@ public interface SqlValidatorScope {
 
   /** @deprecated Use
    * {@link #findQualifyingTableNames(String, SqlNode, SqlNameMatcher)} */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   Pair<String, SqlValidatorNamespace> findQualifyingTableName(String columnName,
       SqlNode ctx);
 
@@ -179,7 +179,7 @@ public interface SqlValidatorScope {
 
   /** @deprecated Use
    * {@link #resolveTable(List, SqlNameMatcher, Path, Resolved)}. */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   SqlValidatorNamespace getTableNamespace(List<String> names);
 
   /**

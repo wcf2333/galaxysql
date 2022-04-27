@@ -78,7 +78,7 @@ public class MultiJoinOptimizeBushyRule extends RelOptRule {
     super(operand(MultiJoin.class, any()), relBuilderFactory, null);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public MultiJoinOptimizeBushyRule(RelFactories.JoinFactory joinFactory,
       RelFactories.ProjectFactory projectFactory) {
     this(RelBuilder.proto(joinFactory, projectFactory));

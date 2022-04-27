@@ -1157,7 +1157,7 @@ public class RexUtil {
     return builder.build();
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RelDataType createStructType(
       RelDataTypeFactory typeFactory,
       final List<? extends RexNode> exprs,
@@ -1887,7 +1887,7 @@ public class RexUtil {
     return new CnfHelper(rexBuilder, -1).pull(node);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static List<RexNode> fixUp(final RexBuilder rexBuilder,
       List<RexNode> nodes, final RelDataType rowType) {
     final List<RelDataType> typeList = RelOptUtil.getFieldTypeList(rowType);
@@ -1947,7 +1947,7 @@ public class RexUtil {
    *
    * @deprecated Use {@link RexSimplify#simplifyPreservingType(RexNode)},
    * which allows you to specify an {@link RexExecutor}. */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RexNode simplifyPreservingType(RexBuilder rexBuilder,
       RexNode e) {
     return new RexSimplify(rexBuilder, RelOptPredicateList.EMPTY, false,
@@ -1961,7 +1961,7 @@ public class RexUtil {
    * @deprecated Use {@link RexSimplify#simplify(RexNode)},
    * which allows you to specify an {@link RexExecutor}.
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RexNode simplify(RexBuilder rexBuilder, RexNode e) {
     return new RexSimplify(rexBuilder, RelOptPredicateList.EMPTY, false,
         EXECUTOR).simplify(e);
@@ -1991,7 +1991,7 @@ public class RexUtil {
    * @deprecated Use {@link RexSimplify#simplify(RexNode)},
    * which allows you to specify an {@link RexExecutor}.
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RexNode simplify(RexBuilder rexBuilder, RexNode e,
       boolean unknownAsFalse) {
     return new RexSimplify(rexBuilder, RelOptPredicateList.EMPTY,
@@ -2004,14 +2004,14 @@ public class RexUtil {
    * @deprecated Use {@link RexSimplify#simplifyAnds(Iterable)},
    * which allows you to specify an {@link RexExecutor}.
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RexNode simplifyAnds(RexBuilder rexBuilder,
       Iterable<? extends RexNode> nodes) {
     return new RexSimplify(rexBuilder, RelOptPredicateList.EMPTY, false,
         EXECUTOR).simplifyAnds(nodes);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RexNode simplifyAnds(RexBuilder rexBuilder,
       Iterable<? extends RexNode> nodes, boolean unknownAsFalse) {
     return new RexSimplify(rexBuilder, RelOptPredicateList.EMPTY,
@@ -2066,21 +2066,21 @@ public class RexUtil {
     }
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RexNode simplifyAnd(RexBuilder rexBuilder, RexCall e,
       boolean unknownAsFalse) {
     return new RexSimplify(rexBuilder, RelOptPredicateList.EMPTY,
         unknownAsFalse, EXECUTOR).simplifyAnd(e);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RexNode simplifyAnd2(RexBuilder rexBuilder,
       List<RexNode> terms, List<RexNode> notTerms) {
     return new RexSimplify(rexBuilder, RelOptPredicateList.EMPTY, false,
         EXECUTOR).simplifyAnd2(terms, notTerms);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RexNode simplifyAnd2ForUnknownAsFalse(RexBuilder rexBuilder,
       List<RexNode> terms, List<RexNode> notTerms) {
     final Class<Comparable> clazz = Comparable.class;
@@ -2116,13 +2116,13 @@ public class RexUtil {
     return null;
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RexNode simplifyOr(RexBuilder rexBuilder, RexCall call) {
     return new RexSimplify(rexBuilder, RelOptPredicateList.EMPTY, false,
         EXECUTOR).simplifyOr(call);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RexNode simplifyOrs(RexBuilder rexBuilder,
       List<RexNode> terms) {
     return new RexSimplify(rexBuilder, RelOptPredicateList.EMPTY, false,
@@ -2992,7 +2992,7 @@ public class RexUtil {
     private final Map<RexNode, Boolean> unknownAsFalseMap;
     private final boolean matchNullability;
 
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     public ExprSimplifier(RexSimplify simplify) {
       this(simplify, true);
     }

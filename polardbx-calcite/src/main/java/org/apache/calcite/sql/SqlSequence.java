@@ -39,7 +39,7 @@ public abstract class SqlSequence extends SqlDdl {
     super(operator, pos);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public SqlSequence(SqlParserPos pos) {
     this(DDL_OPERATOR, pos);
   }

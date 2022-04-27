@@ -537,7 +537,7 @@ public class RexProgramBuilder {
         projectList, condition, outputRowType, normalize, simplify);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RexProgramBuilder create(
       RexBuilder rexBuilder,
       final RelDataType inputRowType,
@@ -556,7 +556,7 @@ public class RexProgramBuilder {
         projectList, condition, outputRowType, normalize, simplify);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RexProgramBuilder create(
       RexBuilder rexBuilder,
       final RelDataType inputRowType,
@@ -608,7 +608,7 @@ public class RexProgramBuilder {
     return progBuilder;
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static RexProgram normalize(
       RexBuilder rexBuilder,
       RexProgram program) {

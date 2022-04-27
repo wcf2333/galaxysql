@@ -151,7 +151,7 @@ public enum CalciteConnectionProperty implements ConnectionProperty {
   private static final Map<String, CalciteConnectionProperty> NAME_TO_PROPS;
 
   /** Deprecated; use {@link #TIME_ZONE}. */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static final CalciteConnectionProperty TIMEZONE = TIME_ZONE;
 
   static {

@@ -25,7 +25,7 @@ package org.apache.calcite.sql;
  *
  * @deprecated Use {@code org.apache.calcite.avatica.SqlState}
  */
-@Deprecated // will be removed before 2.0
+@Deprecated 
 public enum SqlStateCodes {
   CARDINALITY_VIOLATION("cardinality violation", "21", "000"),
 

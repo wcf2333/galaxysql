@@ -33,7 +33,7 @@ import java.util.Set;
  * @deprecated Use
  * {@link org.apache.calcite.rel.core.EquiJoin EquiJoin in 'core' package}
  */
-@Deprecated // to be removed before 2.0
+@Deprecated 
 public abstract class EquiJoin extends org.apache.calcite.rel.core.EquiJoin {
   public EquiJoin(RelOptCluster cluster, RelTraitSet traits, RelNode left,
       RelNode right, RexNode condition, ImmutableIntList leftKeys,

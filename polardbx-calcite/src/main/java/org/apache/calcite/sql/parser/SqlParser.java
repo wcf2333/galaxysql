@@ -35,7 +35,7 @@ import java.io.StringReader;
  */
 public class SqlParser {
   public static final int DEFAULT_IDENTIFIER_MAX_LENGTH = 128;
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static final boolean DEFAULT_ALLOW_BANG_EQUAL =
       SqlConformanceEnum.DEFAULT.isBangEqualAllowed();
 
@@ -202,7 +202,7 @@ public class SqlParser {
     Quoting quoting();
     boolean caseSensitive();
     SqlConformance conformance();
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     boolean allowBangEqual();
     SqlParserImplFactory parserFactory();
   }
@@ -259,7 +259,7 @@ public class SqlParser {
     }
 
     @SuppressWarnings("unused")
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     public ConfigBuilder setAllowBangEqual(final boolean allowBangEqual) {
       if (allowBangEqual != conformance.isBangEqualAllowed()) {
         setConformance(

@@ -55,7 +55,7 @@ public class SqlCovarAggFunction extends SqlAggFunction {
         || kind == SqlKind.REGR_SYY);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public SqlCovarAggFunction(RelDataType type, Subtype subtype) {
     this(SqlKind.valueOf(subtype.name()));
   }
@@ -67,7 +67,7 @@ public class SqlCovarAggFunction extends SqlAggFunction {
    *
    * @return Subtype
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public Subtype getSubtype() {
     return Subtype.valueOf(kind.name());
   }
@@ -75,7 +75,7 @@ public class SqlCovarAggFunction extends SqlAggFunction {
   /**
    * Enum for defining specific types.
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public enum Subtype {
     COVAR_POP,
     COVAR_SAMP,

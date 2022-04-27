@@ -383,7 +383,7 @@ public class SqlToRelConverter {
      * @param rexBuilder Rex builder
      * @param convertletTable Expression converter
      */
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     public SqlToRelConverter(RelOptTable.ViewExpander viewExpander, SqlValidator validator,
                              Prepare.CatalogReader catalogReader, RelOptPlanner planner, RexBuilder rexBuilder,
                              SqlRexConvertletTable convertletTable) {
@@ -396,7 +396,7 @@ public class SqlToRelConverter {
             Integer.MAX_VALUE);
     }
 
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     public SqlToRelConverter(RelOptTable.ViewExpander viewExpander, SqlValidator validator,
                              Prepare.CatalogReader catalogReader, RelOptCluster cluster,
                              SqlRexConvertletTable convertletTable) {
@@ -1510,7 +1510,7 @@ public class SqlToRelConverter {
      *
      * @return threshold, default {@link #DEFAULT_IN_SUB_QUERY_THRESHOLD}
      */
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     protected int getInSubqueryThreshold() {
         return config.getInSubQueryThreshold();
     }
@@ -3229,7 +3229,7 @@ public class SqlToRelConverter {
         }
     }
 
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     protected boolean enableDecorrelation() {
         // disable sub-query decorrelation when needed.
         // e.g. if outer joins are not supported.
@@ -3245,7 +3245,7 @@ public class SqlToRelConverter {
      *
      * @return Whether to trim unused fields
      */
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     public boolean isTrimUnusedFields() {
         return config.isTrimUnusedFields();
     }
@@ -7001,7 +7001,7 @@ public class SqlToRelConverter {
             return this;
         }
 
-        @Deprecated // to be removed before 2.0
+        @Deprecated 
         public ConfigBuilder withInSubqueryThreshold(int inSubQueryThreshold) {
             return withInSubQueryThreshold(inSubQueryThreshold);
         }

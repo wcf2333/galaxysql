@@ -56,7 +56,7 @@ public class EnumerableProject extends Project implements EnumerableRel {
     assert getConvention() instanceof EnumerableConvention;
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public EnumerableProject(RelOptCluster cluster, RelTraitSet traitSet,
       RelNode input, List<? extends RexNode> projects, RelDataType rowType,
       int flags) {

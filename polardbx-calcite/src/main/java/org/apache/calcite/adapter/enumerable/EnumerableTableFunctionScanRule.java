@@ -31,7 +31,7 @@ import com.google.common.base.Predicates;
  * relational expression
  * {@link org.apache.calcite.adapter.enumerable.EnumerableConvention enumerable calling convention}. */
 public class EnumerableTableFunctionScanRule extends ConverterRule {
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public EnumerableTableFunctionScanRule() {
     this(RelFactories.LOGICAL_BUILDER);
   }

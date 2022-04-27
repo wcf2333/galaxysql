@@ -46,7 +46,7 @@ public class JoinPushExpressionsRule extends RelOptRule {
     super(operand(clazz, any()), relBuilderFactory, null);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public JoinPushExpressionsRule(Class<? extends Join> clazz,
       RelFactories.ProjectFactory projectFactory) {
     this(clazz, RelBuilder.proto(projectFactory));

@@ -58,14 +58,14 @@ public class SortProjectTransposeRule extends RelOptRule {
 
   //~ Constructors -----------------------------------------------------------
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public SortProjectTransposeRule(
       Class<? extends Sort> sortClass,
       Class<? extends Project> projectClass) {
     this(sortClass, projectClass, RelFactories.LOGICAL_BUILDER, null);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public SortProjectTransposeRule(
       Class<? extends Sort> sortClass,
       Class<? extends Project> projectClass,
@@ -90,7 +90,7 @@ public class SortProjectTransposeRule extends RelOptRule {
     super(operand, relBuilderFactory, description);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   protected SortProjectTransposeRule(RelOptRuleOperand operand) {
     super(operand);
   }

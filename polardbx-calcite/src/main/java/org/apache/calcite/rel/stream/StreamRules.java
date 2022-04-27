@@ -290,7 +290,7 @@ public class StreamRules {
    */
   public static class DeltaJoinTransposeRule extends RelOptRule {
 
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     public DeltaJoinTransposeRule() {
       this(RelFactories.LOGICAL_BUILDER);
     }

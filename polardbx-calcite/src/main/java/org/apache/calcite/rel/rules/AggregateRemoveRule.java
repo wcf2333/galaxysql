@@ -41,7 +41,7 @@ public class AggregateRemoveRule extends RelOptRule {
 
   //~ Constructors -----------------------------------------------------------
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public AggregateRemoveRule(Class<? extends Aggregate> aggregateClass) {
     this(aggregateClass, RelFactories.LOGICAL_BUILDER);
   }

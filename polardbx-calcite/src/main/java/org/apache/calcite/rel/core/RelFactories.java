@@ -152,7 +152,7 @@ public class RelFactories {
     RelNode createSort(RelNode input, RelCollation collation, RexNode offset,
         RexNode fetch);
 
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     RelNode createSort(RelTraitSet traits, RelNode input,
         RelCollation collation, RexNode offset, RexNode fetch);
   }
@@ -167,7 +167,7 @@ public class RelFactories {
       return LogicalSort.create(input, collation, offset, fetch);
     }
 
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     public RelNode createSort(RelTraitSet traits, RelNode input,
         RelCollation collation, RexNode offset, RexNode fetch) {
       return createSort(input, collation, offset, fetch);
@@ -283,7 +283,7 @@ public class RelFactories {
                        Set<CorrelationId> variablesSet, JoinRelType joinType,
                        boolean semiJoinDone, SqlNodeList hints);
 
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     RelNode createJoin(RelNode left, RelNode right, RexNode condition,
         JoinRelType joinType, Set<String> variablesStopped,
         boolean semiJoinDone);

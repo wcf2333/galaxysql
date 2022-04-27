@@ -58,13 +58,13 @@ public class ViewTable
     this.viewPath = viewPath == null ? null : ImmutableList.copyOf(viewPath);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static ViewTableMacro viewMacro(SchemaPlus schema,
       final String viewSql, final List<String> schemaPath) {
     return viewMacro(schema, viewSql, schemaPath, null, Boolean.TRUE);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static ViewTableMacro viewMacro(SchemaPlus schema, String viewSql,
       List<String> schemaPath, Boolean modifiable) {
     return viewMacro(schema, viewSql, schemaPath, null, modifiable);

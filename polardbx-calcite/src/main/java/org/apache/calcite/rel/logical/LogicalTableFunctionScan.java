@@ -62,7 +62,7 @@ public class LogicalTableFunctionScan extends TableFunctionScan {
         columnMappings);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public LogicalTableFunctionScan(
       RelOptCluster cluster,
       List<RelNode> inputs,

@@ -708,7 +708,7 @@ public class RelBuilder {
   }
 
   /** @deprecated Use {@link #groupKey(ImmutableBitSet, ImmutableList)}. */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public GroupKey groupKey(ImmutableBitSet groupSet, boolean indicator,
       ImmutableList<ImmutableBitSet> groupSets) {
     return groupKey_(groupSet, indicator, groupSets);
@@ -734,7 +734,7 @@ public class RelBuilder {
     return groupKey(nodes, indicator, nodeLists);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public AggCall aggregateCall(SqlAggFunction aggFunction, boolean distinct,
       RexNode filter, String alias, RexNode... operands) {
     return aggregateCall(aggFunction, distinct, false, filter, alias,
@@ -748,7 +748,7 @@ public class RelBuilder {
         ImmutableList.copyOf(operands));
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public AggCall aggregateCall(SqlAggFunction aggFunction, boolean distinct,
       RexNode filter, String alias, Iterable<? extends RexNode> operands) {
     return aggregateCall(aggFunction, distinct, false, filter, alias, operands);

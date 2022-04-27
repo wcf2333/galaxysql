@@ -210,7 +210,7 @@ public class JdbcRules {
       super(cluster, traitSet, left, right, condition, variablesSet, joinType, hints);
     }
 
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     protected JdbcJoin(
         RelOptCluster cluster,
         RelTraitSet traitSet,
@@ -296,7 +296,7 @@ public class JdbcRules {
       this.rowType = program.getOutputRowType();
     }
 
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     public JdbcCalc(RelOptCluster cluster, RelTraitSet traitSet, RelNode input,
         RexProgram program, int flags) {
       this(cluster, traitSet, input, program);
@@ -369,7 +369,7 @@ public class JdbcRules {
       assert getConvention() instanceof JdbcConvention;
     }
 
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     public JdbcProject(RelOptCluster cluster, RelTraitSet traitSet,
         RelNode input, List<RexNode> projects, RelDataType rowType, int flags) {
       this(cluster, traitSet, input, projects, rowType);

@@ -122,7 +122,7 @@ public abstract class RelOptRuleCall {
    * @return matched relational expressions
    * @deprecated Use {@link #getRelList()} or {@link #rel(int)}
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public RelNode[] getRels() {
     return rels;
   }

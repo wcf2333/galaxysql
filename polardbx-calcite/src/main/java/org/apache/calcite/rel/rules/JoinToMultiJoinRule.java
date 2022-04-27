@@ -107,7 +107,7 @@ public class JoinToMultiJoinRule extends RelOptRule {
 
   //~ Constructors -----------------------------------------------------------
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public JoinToMultiJoinRule(Class<? extends Join> clazz) {
     this(clazz, RelFactories.LOGICAL_BUILDER);
   }

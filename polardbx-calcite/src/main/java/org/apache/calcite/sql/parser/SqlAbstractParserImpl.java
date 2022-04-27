@@ -320,10 +320,10 @@ public abstract class SqlAbstractParserImpl {
      */
     ACCEPT_CURSOR;
 
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     public static final ExprContext ACCEPT_SUBQUERY = ACCEPT_SUB_QUERY;
 
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     public static final ExprContext ACCEPT_NONQUERY = ACCEPT_NON_QUERY;
   }
 

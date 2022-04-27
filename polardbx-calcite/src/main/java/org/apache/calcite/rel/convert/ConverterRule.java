@@ -55,7 +55,7 @@ public abstract class ConverterRule extends RelOptRule {
         RelFactories.LOGICAL_BUILDER, description);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public <R extends RelNode> ConverterRule(Class<R> clazz,
       Predicate<? super R> predicate, RelTrait in, RelTrait out,
       String description) {

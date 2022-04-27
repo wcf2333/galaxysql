@@ -78,7 +78,7 @@ public class LoptOptimizeJoinRule extends RelOptRule {
     super(operand(MultiJoin.class, any()), relBuilderFactory, null);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public LoptOptimizeJoinRule(RelFactories.JoinFactory joinFactory,
       RelFactories.ProjectFactory projectFactory,
       RelFactories.FilterFactory filterFactory) {

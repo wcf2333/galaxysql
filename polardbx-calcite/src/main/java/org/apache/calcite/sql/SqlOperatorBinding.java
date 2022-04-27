@@ -95,7 +95,7 @@ public abstract class SqlOperatorBinding {
    * @param ordinal zero-based ordinal of operand of interest
    * @return string value
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public String getStringLiteralOperand(int ordinal) {
     throw new UnsupportedOperationException();
   }
@@ -106,7 +106,7 @@ public abstract class SqlOperatorBinding {
    * @param ordinal zero-based ordinal of operand of interest
    * @return integer value
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public int getIntLiteralOperand(int ordinal) {
     throw new UnsupportedOperationException();
   }
@@ -139,7 +139,7 @@ public abstract class SqlOperatorBinding {
     throw new UnsupportedOperationException();
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public Comparable getOperandLiteralValue(int ordinal) {
     return getOperandLiteralValue(ordinal, Comparable.class);
   }

@@ -940,7 +940,7 @@ public abstract class SqlOperator {
    *
    * @deprecated Use {@link #getMonotonicity(SqlOperatorBinding)}
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public SqlMonotonicity getMonotonicity(
       SqlCall call,
       SqlValidatorScope scope) {

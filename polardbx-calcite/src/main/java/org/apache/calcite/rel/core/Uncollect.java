@@ -49,7 +49,7 @@ public class Uncollect extends SingleRel {
 
   //~ Constructors -----------------------------------------------------------
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public Uncollect(RelOptCluster cluster, RelTraitSet traitSet,
       RelNode child) {
     this(cluster, traitSet, child, false);

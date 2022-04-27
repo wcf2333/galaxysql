@@ -60,7 +60,7 @@ public class SqlMinMaxAggFunction extends SqlAggFunction {
 
   //~ Instance fields --------------------------------------------------------
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public final List<RelDataType> argTypes;
   private final int minMaxKind;
 
@@ -88,7 +88,7 @@ public class SqlMinMaxAggFunction extends SqlAggFunction {
   }
 
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public SqlMinMaxAggFunction(
       List<RelDataType> argTypes,
       boolean isMin,
@@ -100,12 +100,12 @@ public class SqlMinMaxAggFunction extends SqlAggFunction {
 
   //~ Methods ----------------------------------------------------------------
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public boolean isMin() {
     return kind == SqlKind.MIN;
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public int getMinMaxKind() {
     return minMaxKind;
   }

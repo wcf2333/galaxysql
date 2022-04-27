@@ -128,14 +128,14 @@ public class JoinProjectTransposeRule extends RelOptRule {
     this(operand, description, false, RelFactories.LOGICAL_BUILDER);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public JoinProjectTransposeRule(RelOptRuleOperand operand,
       String description, ProjectFactory projectFactory) {
     this(operand, description, false,
         RelBuilder.proto(Contexts.of(projectFactory)));
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public JoinProjectTransposeRule(RelOptRuleOperand operand,
       String description, boolean includeOuter,
       ProjectFactory projectFactory) {

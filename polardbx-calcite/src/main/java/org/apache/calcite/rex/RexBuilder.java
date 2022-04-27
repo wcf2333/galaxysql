@@ -1204,7 +1204,7 @@ public class RexBuilder {
   }
 
   /** @deprecated Use {@link #makeDateLiteral(DateString)}. */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public RexLiteral makeDateLiteral(Calendar calendar) {
     return makeDateLiteral(DateString.fromCalendarFields(calendar));
   }
@@ -1218,7 +1218,7 @@ public class RexBuilder {
   }
 
   /** @deprecated Use {@link #makeTimeLiteral(TimeString, int)}. */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public RexLiteral makeTimeLiteral(Calendar calendar, int precision) {
     return makeTimeLiteral(TimeString.fromCalendarFields(calendar), precision);
   }
@@ -1244,7 +1244,7 @@ public class RexBuilder {
   }
 
   /** @deprecated Use {@link #makeTimestampLiteral(TimestampString, int)}. */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public RexLiteral makeTimestampLiteral(Calendar calendar, int precision) {
     return makeTimestampLiteral(TimestampString.fromCalendarFields(calendar),
         precision);
@@ -1341,13 +1341,13 @@ public class RexBuilder {
   }
 
   /** @deprecated Use {@link #makeNullLiteral(RelDataType)} */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public RexNode makeNullLiteral(SqlTypeName typeName, int precision) {
     return makeNullLiteral(typeFactory.createSqlType(typeName, precision));
   }
 
   /** @deprecated Use {@link #makeNullLiteral(RelDataType)} */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public RexNode makeNullLiteral(SqlTypeName typeName) {
     return makeNullLiteral(typeFactory.createSqlType(typeName));
   }

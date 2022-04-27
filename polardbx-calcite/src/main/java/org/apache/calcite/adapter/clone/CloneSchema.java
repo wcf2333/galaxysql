@@ -88,7 +88,7 @@ public class CloneSchema extends AbstractSchema {
         ImmutableList.<RelCollation>of(), null, queryable);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static <T> Table createCloneTable(final JavaTypeFactory typeFactory,
       final RelProtoDataType protoRowType,
       final List<ColumnMetaData.Rep> repList,

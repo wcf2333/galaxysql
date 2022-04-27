@@ -118,7 +118,7 @@ public final class SqlParserUtil {
   /**
    * @deprecated this method is not localized for Farrago standards
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static java.sql.Date parseDate(String s) {
     return java.sql.Date.valueOf(s);
   }
@@ -126,7 +126,7 @@ public final class SqlParserUtil {
   /**
    * @deprecated Does not parse SQL:99 milliseconds
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static java.sql.Time parseTime(String s) {
     return java.sql.Time.valueOf(s);
   }
@@ -134,7 +134,7 @@ public final class SqlParserUtil {
   /**
    * @deprecated this method is not localized for Farrago standards
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static java.sql.Timestamp parseTimestamp(String s) {
     return java.sql.Timestamp.valueOf(s);
   }
@@ -304,7 +304,7 @@ public final class SqlParserUtil {
    * Parses a Binary string. SQL:99 defines a binary string as a hexstring
    * with EVEN nbr of hex digits.
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static byte[] parseBinaryString(String s) {
     s = Util.replace(s, " ", "");
     s = Util.replace(s, "\n", "");
@@ -572,7 +572,7 @@ public final class SqlParserUtil {
     return new ParsedCollation(charset, locale, strength);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static String[] toStringArray(List<String> list) {
     return list.toArray(new String[list.size()]);
   }
@@ -585,7 +585,7 @@ public final class SqlParserUtil {
     return list.toArray();
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static String rightTrim(
       String s,
       char c) {

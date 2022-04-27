@@ -81,7 +81,7 @@ class VolcanoRuleMatch extends VolcanoRuleCall {
   /**
    * Recomputes the digest of this VolcanoRuleMatch.
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public void recomputeDigest() {
     digest = computeDigest();
   }

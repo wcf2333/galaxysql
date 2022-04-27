@@ -71,7 +71,7 @@ public class RexSimplify {
     this.executor = Preconditions.checkNotNull(executor);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public RexSimplify(RexBuilder rexBuilder, boolean unknownAsFalse,
       RexExecutor executor) {
     this(rexBuilder, RelOptPredicateList.EMPTY, unknownAsFalse, executor);

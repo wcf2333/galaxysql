@@ -34,7 +34,7 @@ import com.google.common.base.Predicates;
  * {@link EnumerableConvention enumerable calling convention}. */
 public class EnumerableTableScanRule extends ConverterRule {
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public EnumerableTableScanRule() {
     this(RelFactories.LOGICAL_BUILDER);
   }

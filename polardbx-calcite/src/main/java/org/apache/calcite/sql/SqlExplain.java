@@ -166,7 +166,7 @@ public class SqlExplain extends SqlCall implements SqlHint {
    *
    * @deprecated Use {@link #getFormat()}
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public boolean isXml() {
     return getFormat() == SqlExplainFormat.XML;
   }

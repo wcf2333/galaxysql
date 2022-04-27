@@ -90,7 +90,7 @@ public final class LogicalCorrelate extends Correlate {
     this.leftConditions = leftConditions;
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public LogicalCorrelate(RelOptCluster cluster, RelNode left, RelNode right,
       CorrelationId correlationId,
       ImmutableBitSet requiredColumns, List<RexNode> leftConditions, SqlKind opKind, SemiJoinType joinType) {

@@ -52,7 +52,7 @@ public final class JoinExtractFilterRule extends RelOptRule {
   /**
    * Creates an JoinExtractFilterRule.
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public JoinExtractFilterRule(Class<? extends Join> clazz) {
     this(clazz, RelFactories.LOGICAL_BUILDER);
   }

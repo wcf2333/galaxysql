@@ -801,7 +801,7 @@ public class ImmutableBitSet
     return new Builder(EMPTY_LONGS);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static Builder builder(ImmutableBitSet bitSet) {
     return bitSet.rebuild();
   }

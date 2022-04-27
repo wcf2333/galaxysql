@@ -269,7 +269,7 @@ public class Programs {
     return hep(CALC_RULES, true, metadataProvider);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static Program subquery(RelMetadataProvider metadataProvider) {
     return subQuery(metadataProvider);
   }

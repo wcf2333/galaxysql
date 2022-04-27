@@ -42,7 +42,7 @@ public class CoerceInputsRule extends RelOptRule {
 
   //~ Constructors -----------------------------------------------------------
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public CoerceInputsRule(
       Class<? extends RelNode> consumerRelClass,
       boolean coerceNames) {

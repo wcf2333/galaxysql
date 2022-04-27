@@ -38,7 +38,7 @@ import java.util.List;
 public class SqlHistogramAggFunction extends SqlAggFunction {
   //~ Instance fields --------------------------------------------------------
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   private final RelDataType type;
 
   //~ Constructors -----------------------------------------------------------
@@ -64,7 +64,7 @@ public class SqlHistogramAggFunction extends SqlAggFunction {
     return ImmutableList.of(type);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public RelDataType getType() {
     return type;
   }

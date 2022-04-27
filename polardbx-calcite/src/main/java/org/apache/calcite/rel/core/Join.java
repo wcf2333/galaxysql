@@ -123,7 +123,7 @@ public abstract class Join extends BiRel {
       this(cluster, traitSet, left, right, condition, variablesSet, joinType, new SqlNodeList(SqlParserPos.ZERO));
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   protected Join(
       RelOptCluster cluster,
       RelTraitSet traitSet,

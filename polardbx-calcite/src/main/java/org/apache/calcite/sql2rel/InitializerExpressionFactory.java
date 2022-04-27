@@ -39,7 +39,7 @@ public interface InitializerExpressionFactory {
    * @deprecated Use {@code c.generationStrategy(t, i) == VIRTUAL
    * || c.generationStrategy(t, i) == STORED}
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   boolean isGeneratedAlways(
       RelOptTable table,
       int iColumn);

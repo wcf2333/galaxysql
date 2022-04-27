@@ -85,7 +85,7 @@ public class AggregateJoinTransposeRule extends RelOptRule {
     this.allowFunctions = allowFunctions;
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public AggregateJoinTransposeRule(Class<? extends Aggregate> aggregateClass,
       RelFactories.AggregateFactory aggregateFactory,
       Class<? extends Join> joinClass,
@@ -94,7 +94,7 @@ public class AggregateJoinTransposeRule extends RelOptRule {
         RelBuilder.proto(aggregateFactory, joinFactory), false);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public AggregateJoinTransposeRule(Class<? extends Aggregate> aggregateClass,
       RelFactories.AggregateFactory aggregateFactory,
       Class<? extends Join> joinClass,
@@ -104,7 +104,7 @@ public class AggregateJoinTransposeRule extends RelOptRule {
         RelBuilder.proto(aggregateFactory, joinFactory), allowFunctions);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public AggregateJoinTransposeRule(Class<? extends Aggregate> aggregateClass,
       RelFactories.AggregateFactory aggregateFactory,
       Class<? extends Join> joinClass,
@@ -114,7 +114,7 @@ public class AggregateJoinTransposeRule extends RelOptRule {
         RelBuilder.proto(aggregateFactory, joinFactory, projectFactory), false);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public AggregateJoinTransposeRule(Class<? extends Aggregate> aggregateClass,
       RelFactories.AggregateFactory aggregateFactory,
       Class<? extends Join> joinClass,

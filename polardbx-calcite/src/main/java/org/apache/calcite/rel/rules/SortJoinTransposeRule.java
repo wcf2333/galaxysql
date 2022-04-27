@@ -52,7 +52,7 @@ public class SortJoinTransposeRule extends RelOptRule {
   //~ Constructors -----------------------------------------------------------
 
   /** Creates a SortJoinTransposeRule. */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public SortJoinTransposeRule(Class<? extends Sort> sortClass,
       Class<? extends Join> joinClass) {
     this(sortClass, joinClass, RelFactories.LOGICAL_BUILDER);

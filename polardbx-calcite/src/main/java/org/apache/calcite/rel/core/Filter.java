@@ -143,13 +143,13 @@ public abstract class Filter extends SingleRel {
     return RelMdUtil.estimateFilteredRows(getInput(), condition, mq);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static double estimateFilteredRows(RelNode child, RexProgram program) {
     final RelMetadataQuery mq = RelMetadataQuery.instance();
     return RelMdUtil.estimateFilteredRows(child, program, mq);
   }
 
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   public static double estimateFilteredRows(RelNode child, RexNode condition) {
     final RelMetadataQuery mq = RelMetadataQuery.instance();
     return RelMdUtil.estimateFilteredRows(child, condition, mq);

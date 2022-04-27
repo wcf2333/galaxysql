@@ -109,7 +109,7 @@ public abstract class FilterJoinRule extends RelOptRule {
    * Creates a FilterJoinRule with an explicit root operand and
    * factories.
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   protected FilterJoinRule(RelOptRuleOperand operand, String id,
       boolean smart, RelFactories.FilterFactory filterFactory,
       RelFactories.ProjectFactory projectFactory) {
@@ -121,7 +121,7 @@ public abstract class FilterJoinRule extends RelOptRule {
    * Creates a FilterProjectTransposeRule with an explicit root operand and
    * factories.
    */
-  @Deprecated // to be removed before 2.0
+  @Deprecated 
   protected FilterJoinRule(RelOptRuleOperand operand, String id,
       boolean smart, RelFactories.FilterFactory filterFactory,
       RelFactories.ProjectFactory projectFactory,
@@ -378,7 +378,7 @@ public abstract class FilterJoinRule extends RelOptRule {
           predicate);
     }
 
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     public JoinConditionPushRule(RelFactories.FilterFactory filterFactory,
         RelFactories.ProjectFactory projectFactory, Predicate predicate) {
       this(RelBuilder.proto(filterFactory, projectFactory), predicate);
@@ -420,7 +420,7 @@ public abstract class FilterJoinRule extends RelOptRule {
           predicate);
     }
 
-    @Deprecated // to be removed before 2.0
+    @Deprecated 
     public FilterIntoJoinRule(boolean smart,
         RelFactories.FilterFactory filterFactory,
         RelFactories.ProjectFactory projectFactory,
