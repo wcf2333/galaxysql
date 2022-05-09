@@ -16,6 +16,7 @@
 
 package com.alibaba.polardbx.executor.ddl.job.factory;
 
+import com.alibaba.polardbx.common.Engine;
 import com.alibaba.polardbx.executor.ddl.job.converter.PhysicalPlanData;
 import com.alibaba.polardbx.executor.ddl.job.task.basic.DropPartitionTableRemoveMetaTask;
 import com.alibaba.polardbx.executor.ddl.job.task.basic.DropPartitionTableValidateTask;
@@ -23,6 +24,7 @@ import com.alibaba.polardbx.executor.ddl.job.task.basic.DropTableHideTableMetaTa
 import com.alibaba.polardbx.executor.ddl.job.task.basic.DropTablePhyDdlTask;
 import com.alibaba.polardbx.executor.ddl.job.task.basic.StoreTableLocalityTask;
 import com.alibaba.polardbx.executor.ddl.job.task.basic.TableSyncTask;
+import com.alibaba.polardbx.executor.ddl.job.task.basic.oss.UpdateTableRemoveTsTask;
 import com.alibaba.polardbx.executor.ddl.job.task.cdc.CdcDdlMarkTask;
 import com.alibaba.polardbx.executor.ddl.job.task.tablegroup.TableGroupSyncTask;
 import com.alibaba.polardbx.executor.ddl.newengine.job.DdlTask;
@@ -30,7 +32,9 @@ import com.alibaba.polardbx.executor.ddl.newengine.job.ExecutableDdlJob;
 import com.alibaba.polardbx.executor.ddl.newengine.job.wrapper.ExecutableDdlJob4DropPartitionTable;
 import com.alibaba.polardbx.gms.tablegroup.TableGroupConfig;
 import com.alibaba.polardbx.optimizer.OptimizerContext;
+import com.alibaba.polardbx.optimizer.context.ExecutionContext;
 import com.alibaba.polardbx.optimizer.partition.PartitionInfo;
+import com.alibaba.polardbx.optimizer.utils.ITimestampOracle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,8 +45,11 @@ public class DropPartitionTableJobFactory extends DropTableJobFactory {
 
     private List<Long> tableGroupIds = new ArrayList<>();
 
-    public DropPartitionTableJobFactory(PhysicalPlanData physicalPlanData) {
+    private ExecutionContext executionContext;
+
+    public DropPartitionTableJobFactory(PhysicalPlanData physicalPlanData, ExecutionContext executionContext) {
         super(physicalPlanData);
+        this.executionContext = executionContext;
     }
 
     @Override
@@ -92,8 +99,22 @@ public class DropPartitionTableJobFactory extends DropTableJobFactory {
         tasks.add(validateTask);
         tasks.add(dropLocality);
         tasks.add(dropTableHideTableMetaTask);
+        Engine engine = OptimizerContext.getContext(schemaName).getLatestSchemaManager().getTable(logicalTableName).getEngine();
+        if (Engine.isFileStore(engine)) {
+            // change file meta task
+            final ITimestampOracle timestampOracle = executionContext.getTransaction().getTransactionManagerUtil().getTimestampOracle();
+            if (null == timestampOracle) {
+                throw new UnsupportedOperationException("Do not support timestamp oracle");
+            }
+
+            long ts = timestampOracle.nextTimestamp();
+            UpdateTableRemoveTsTask updateTableRemoveTsTask = new UpdateTableRemoveTsTask(engine.name(), schemaName, logicalTableName, ts);
+            tasks.add(updateTableRemoveTsTask);
+        }
         tasks.add(phyDdlTask);
-        tasks.add(cdcDdlMarkTask);
+        if (!Engine.isFileStore(engine)) {
+            tasks.add(cdcDdlMarkTask);
+        }
         tasks.add(removeMetaTask);
         if (syncTableGroup != null) {
             tasks.add(syncTableGroup);
@@ -108,7 +129,9 @@ public class DropPartitionTableJobFactory extends DropTableJobFactory {
         executableDdlJob.setStoreTableLocalityTask(dropLocality);
         executableDdlJob.setDropTableHideTableMetaTask(dropTableHideTableMetaTask);
         executableDdlJob.setPhyDdlTask(phyDdlTask);
-        executableDdlJob.setCdcDdlMarkTask(cdcDdlMarkTask);
+        if (!Engine.isFileStore(engine)) {
+            executableDdlJob.setCdcDdlMarkTask(cdcDdlMarkTask);
+        }
         executableDdlJob.setRemoveMetaTask(removeMetaTask);
         executableDdlJob.setTableSyncTask(tableSyncTask);
 
