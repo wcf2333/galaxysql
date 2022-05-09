@@ -81,7 +81,7 @@ public class RelOptRuleOperand {
    * {@link RelOptRule#operand(Class, RelOptRuleOperandChildren)} or one of its
    * overloaded methods.
    */
-  @Deprecated ; see [CALCITE-1166]
+  @Deprecated // see [CALCITE-1166]
   protected <R extends RelNode> RelOptRuleOperand(
       Class<R> clazz,
       RelTrait trait,
