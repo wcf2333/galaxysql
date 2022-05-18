@@ -15,6 +15,7 @@ user    ALL=(ALL:ALL) ALL
 # 编译并启动存储节点（DN）
 ## 编译DN节点
 ### 安装依赖
+#### Ubuntu20
 ```sql
 apt-get update
 
@@ -28,6 +29,20 @@ g++ --version
 
 # 安装依赖
 apt install make automake cmake git bison libaio-dev libncurses-dev libsasl2-dev libldap2-dev libssl-dev pkg-config
+```
+#### CentOS7
+```sql
+yum install cmake3
+ln -s /usr/bin/cmake3 /usr/bin/cmake
+
+
+# 安装GCC7
+yum install centos-release-scl
+yum install devtoolset-7-gcc devtoolset-7-gcc-c++ devtoolset-7-binutils
+echo "source /opt/rh/devtoolset-7/enable" >>/etc/profile
+
+# 安装依赖
+yum install make automake git openssl-devel ncurses-devel bison libaio-devel
 ```
 ### 上传galaxyengine代码并解压
 ### 编译
@@ -311,28 +326,6 @@ mvn install -D maven.test.skip=true -D env=release
 
 # 解压运行
 tar zxvf target/polardbx-server-5.4.13-SNAPSHOT.tar.gz
-
-#后续操作使用普通账户即可，且不能使用root账户启动
-su poalrx
-```
-## 在DN中创建内部账户
-```sql
-#登录到DN中
-mysql -h127.0.0.1 -uroot -P4886
-
-use mysql;
-
-create user internal_user identified by 'Polarx123456';
-create user 'internal_user'@'localhost' identified by 'Polarx123456';
-create user 'internal_user'@'127.0.0.1' identified by 'Polarx123456';
-
-grant all privileges on *.* to 'internal_user'@'%' ;
-grant all privileges on *.* to 'internal_user'@'localhost';
-grant all privileges on *.* to 'internal_user'@'127.0.0.1' ;
-
-update user set Grant_priv = 'Y' where user = 'internal_user';
-
-flush privileges;
 ```
 ## 启动PolarDB-X CN
 启动mysql进程之后，便可以初始化PolarDB-X，需要准备以下几个配置：
@@ -360,11 +353,6 @@ metaDbUser=my_polarx
 metaDbName=polardbx_meta_db_polardbx
 # PolarDB-X实例名
 instanceId=polardbx-polardbx
-```
-在上述文件中添加如下内容，即上节中创建的内部账户
-```sql
-rootUser=internal_user
-rootPasswd=Polarx123456
 ```
 ### 初始化PolarDB-X：
 
@@ -394,6 +382,10 @@ metaDbPasswd=HMqvkvXZtT7XedA6t2IWY8+D7fJWIJir/mIY1Nf1b58=
 mysql -h127.0.0.1 -uroot -P4886
 
 drop database polardbx_meta_db_polardbx;
+drop database __cdc___000000;
+drop database __cdc___single;
+drop database polardbx;
+drop database polardbx_info_schema;
 drop user 'my_polarx'@'%';
 drop user 'my_polarx'@'localhost';
 drop user 'my_polarx'@'127.0.0.1';
