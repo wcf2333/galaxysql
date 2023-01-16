@@ -22,12 +22,5 @@ import com.alibaba.polardbx.optimizer.memory.MemoryAllocatorCtx;
 public interface LookupTableExec extends ResumeExec, Executor {
     void updateLookupPredicate(Chunk chunk);
 
-    void setMemoryAllocator(MemoryAllocatorCtx memoryAllocator);
-
-    /**
-     * 串行过程中释放用于构建condition的内存
-     */
-    void releaseConditionMemory();
-
     boolean shardEnabled();
 }

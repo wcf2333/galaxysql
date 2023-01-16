@@ -40,12 +40,8 @@ import java.util.List;
 public class MaterializedSemiJoinExec extends AbstractJoinExec implements ConsumerExecutor {
 
     private final int batchSize;
-    private final int materializedItemsLimit;
     private BufferInputBatchQueue bufferInputBatchQueue;
     private boolean distinctInput;
-    private boolean passThrough;
-    private MemoryPool memoryPool;
-    private MemoryAllocatorCtx memoryAllocator;
 
     private boolean isFinish;
     ListenableFuture<?> blocked;
@@ -64,7 +60,6 @@ public class MaterializedSemiJoinExec extends AbstractJoinExec implements Consum
         } else { // ANTI JOIN
             this.batchSize = Integer.MAX_VALUE;
         }
-        this.materializedItemsLimit = context.getParamManager().getInt(ConnectionParams.MATERIALIZED_ITEMS_LIMIT);
         this.distinctInput = distinctInput;
         this.blocked = ProducerExecutor.NOT_BLOCKED;
 
@@ -79,14 +74,24 @@ public class MaterializedSemiJoinExec extends AbstractJoinExec implements Consum
         }
     }
 
+    private void innerResultIsEmpty() {
+        if (joinType == JoinRelType.SEMI) {
+            this.isFinish = true;
+            // anti join
+        } else {
+            outerInput.open();
+        }
+    }
+
     @Override
     public void doOpen() {
-        if (passThrough) {
-            outerInput.open();
-        } else if (!isFinish) {
+        if (!isFinish) {
             Chunk inputChunk = bufferInputBatchQueue.pop();
+            if (inputChunk == null) {
+                innerResultIsEmpty();
+                return;
+            }
             Chunk lookupKeys = innerKeyChunkGetter.apply(inputChunk);
-            lookUpExec.setMemoryAllocator(memoryAllocator);
             lookUpExec.updateLookupPredicate(lookupKeys);
             outerInput.open();
         }
@@ -94,10 +99,8 @@ public class MaterializedSemiJoinExec extends AbstractJoinExec implements Consum
 
     @Override
     public void openConsume() {
-        memoryPool = MemoryPoolUtils.createOperatorTmpTablePool(getExecutorName(), context.getMemoryPool());
-        memoryAllocator = memoryPool.getMemoryAllocatorCtx();
         bufferInputBatchQueue = new BufferInputBatchQueue(
-            batchSize, innerInput.getDataTypes(), memoryAllocator, chunkLimit, context);
+            batchSize, innerInput.getDataTypes(), chunkLimit, context);
     }
 
     @Override
@@ -111,12 +114,8 @@ public class MaterializedSemiJoinExec extends AbstractJoinExec implements Consum
 
     @Override
     public void buildConsume() {
-        if (memoryPool != null) {
-            if (distinctInput) {
-                bufferInputBatchQueue.buildChunks();
-            }
-            this.isFinish = bufferInputBatchQueue.isEmpty() && joinType == JoinRelType.SEMI;
-            this.passThrough = bufferInputBatchQueue.isEmpty() && joinType == JoinRelType.ANTI;
+        if (distinctInput) {
+            bufferInputBatchQueue.buildChunks();
         }
     }
 
@@ -127,41 +126,28 @@ public class MaterializedSemiJoinExec extends AbstractJoinExec implements Consum
 
     @Override
     Chunk doNextChunk() {
-        if (passThrough) {
-            Chunk result = outerInput.nextChunk();
-            if (result == null) {
-                isFinish = lookUpExec.produceIsFinished();
-                blocked = lookUpExec.produceIsBlocked();
-            }
-            return result;
+        if (isFinish) {
+            return null;
         } else {
-            if (isFinish) {
-                return null;
+            Chunk result = outerInput.nextChunk();
+            if (result != null) {
+                return result;
             } else {
-                Chunk result = outerInput.nextChunk();
-                if (result != null) {
-                    return result;
-                } else {
-                    if (lookUpExec.produceIsFinished()) {
-                        Chunk chunk = bufferInputBatchQueue.pop();
+                if (lookUpExec.produceIsFinished()) {
+                    Chunk chunk = bufferInputBatchQueue.pop();
 
-                        if (chunk == null) {
-                            this.isFinish = true;
-                        } else {
-                            if (chunk.getPositionCount() >= materializedItemsLimit) {
-                                throw new TddlRuntimeException(ErrorCode.ERR_EXECUTOR,
-                                    "Too many items in Materialized Semi-Join");
-                            }
-                            Chunk lookupKeys = innerKeyChunkGetter.apply(chunk);
-                            lookUpExec.updateLookupPredicate(lookupKeys);
-                            lookUpExec.resume();
-                            this.blocked = lookUpExec.produceIsBlocked();
-                        }
-                        return null;
+                    if (chunk == null) {
+                        this.isFinish = true;
                     } else {
+                        Chunk lookupKeys = innerKeyChunkGetter.apply(chunk);
+                        lookUpExec.updateLookupPredicate(lookupKeys);
+                        lookUpExec.resume();
                         this.blocked = lookUpExec.produceIsBlocked();
-                        return null;
                     }
+                    return null;
+                } else {
+                    this.blocked = lookUpExec.produceIsBlocked();
+                    return null;
                 }
             }
         }
@@ -172,10 +158,6 @@ public class MaterializedSemiJoinExec extends AbstractJoinExec implements Consum
         innerInput.close();
         outerInput.close();
         bufferInputBatchQueue = null;
-        if (memoryPool != null) {
-            collectMemoryUsage(memoryPool);
-            memoryPool.destroy();
-        }
     }
 
     @Override

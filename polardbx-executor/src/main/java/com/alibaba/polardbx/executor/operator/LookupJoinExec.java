@@ -28,8 +28,6 @@ import com.alibaba.polardbx.optimizer.context.ExecutionContext;
 import com.alibaba.polardbx.optimizer.core.datatype.DataType;
 import com.alibaba.polardbx.optimizer.core.expression.calc.IExpression;
 import com.alibaba.polardbx.optimizer.core.join.EquiJoinKey;
-import com.alibaba.polardbx.optimizer.memory.MemoryAllocatorCtx;
-import com.alibaba.polardbx.optimizer.memory.MemoryPoolUtils;
 import com.google.common.util.concurrent.ListenableFuture;
 import org.apache.calcite.rel.core.JoinRelType;
 
@@ -53,7 +51,6 @@ public class LookupJoinExec extends AbstractBufferedJoinExec implements ResumeEx
     final ChunkConverter allOuterKeyChunkGetter;
 
     BufferInputBatchQueue batchQueue;
-    MemoryAllocatorCtx bufferMemoryAllocator;
     Chunk savePopChunk;
     ListenableFuture<?> blocked;
     boolean isFinish;
@@ -150,10 +147,7 @@ public class LookupJoinExec extends AbstractBufferedJoinExec implements ResumeEx
     @Override
     public void doOpen() {
         createBlockBuilders();
-        this.memoryPool = MemoryPoolUtils.createOperatorTmpTablePool(getExecutorName(), context.getMemoryPool());
-        this.memoryAllocator = memoryPool.getMemoryAllocatorCtx();
-        this.lookupTableExec.setMemoryAllocator(memoryAllocator);
-        this.batchQueue = new BufferInputBatchQueue(batchSize, outerInput.getDataTypes(), memoryAllocator, context);
+        this.batchQueue = new BufferInputBatchQueue(batchSize, outerInput.getDataTypes(), context);
         this.beingConsumeOuter = true;
         this.outerInput.open();
     }
@@ -223,16 +217,15 @@ public class LookupJoinExec extends AbstractBufferedJoinExec implements ResumeEx
         }
     }
 
+
+
     @Override
     public boolean resume() {
         outerNoMoreData = false;
-        this.batchQueue = new BufferInputBatchQueue(batchSize, outerInput.getDataTypes(), memoryAllocator, context);
+        this.batchQueue = new BufferInputBatchQueue(batchSize, outerInput.getDataTypes(), context);
         this.hashTable = null;
         this.positionLinks = null;
         this.beingConsumeOuter = true;
-        if (bufferMemoryAllocator != null) {
-            this.bufferMemoryAllocator.releaseReservedMemory(bufferMemoryAllocator.getReservedAllocated(), true);
-        }
         if (outerResumeExec instanceof TableScanExec) {
             return outerResumeExec.resume();
         } else {
@@ -261,7 +254,6 @@ public class LookupJoinExec extends AbstractBufferedJoinExec implements ResumeEx
             buildKeyChunks = new ChunksIndex();
             savePopChunk = batchQueue.pop();
             if (savePopChunk != null) {
-                getLookupTableExec().releaseConditionMemory();
                 Chunk allJoinKeys = allOuterKeyChunkGetter.apply(savePopChunk);
                 getLookupTableExec().updateLookupPredicate(allJoinKeys);
                 if (innerIsOpen) {
@@ -288,15 +280,7 @@ public class LookupJoinExec extends AbstractBufferedJoinExec implements ResumeEx
             return null;
         } else {
             if (getLookupTableExec().produceIsFinished()) {
-                if (bufferMemoryAllocator != null) {
-                    bufferMemoryAllocator.releaseReservedMemory(bufferMemoryAllocator.getReservedAllocated(), true);
-                } else {
-                    bufferMemoryAllocator = memoryPool.getMemoryAllocatorCtx();
-                }
                 buildHashTable();
-                // Allocate memory for hash-table
-                bufferMemoryAllocator.allocateReservedMemory(hashTable.estimateSize());
-                bufferMemoryAllocator.allocateReservedMemory(SizeOf.sizeOf(positionLinks));
                 Chunk ret = savePopChunk;
                 this.savePopChunk = null;
                 this.blocked = ProducerExecutor.NOT_BLOCKED;
@@ -363,15 +347,8 @@ public class LookupJoinExec extends AbstractBufferedJoinExec implements ResumeEx
 
         innerInput.close();
         outerInput.close();
-        if (memoryPool != null) {
-            collectMemoryUsage(memoryPool);
-            memoryPool.destroy();
-            memoryPool = null;
-        }
         batchQueue = null;
-        bufferMemoryAllocator = null;
         isFinish = true;
-        memoryPool = null;
         savePopChunk = null;
     }
 

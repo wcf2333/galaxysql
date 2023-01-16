@@ -28,20 +28,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class BufferInputBatchQueue extends AbstractBatchQueue {
 
     LinkedList<Chunk> chunks;
-    MemoryAllocatorCtx allocator;
     ChunkHashSet chunkHashSet;
 
     AtomicInteger totalRowCount = new AtomicInteger(0);
 
-    public BufferInputBatchQueue(int batchSize, List<DataType> columns, MemoryAllocatorCtx allocator,
+    public BufferInputBatchQueue(int batchSize, List<DataType> columns,
                                  ExecutionContext context) {
-        this(batchSize, columns, allocator, 1024, context);
+        this(batchSize, columns, 1024, context);
     }
 
-    public BufferInputBatchQueue(int batchSize, List<DataType> columns, MemoryAllocatorCtx allocator, int chunkSize,
+    public BufferInputBatchQueue(int batchSize, List<DataType> columns, int chunkSize,
                                  ExecutionContext context) {
         super(batchSize, columns, context);
-        this.allocator = allocator;
         this.chunks = new LinkedList<>();
         DataType[] inputType = new DataType[columns.size()];
         for (int i = 0; i < inputType.length; i++) {
@@ -55,10 +53,7 @@ public class BufferInputBatchQueue extends AbstractBatchQueue {
     }
 
     public void addDistinctChunk(Chunk chunk) {
-        long beforeEstimateSize = chunkHashSet.estimateSize();
         chunkHashSet.addChunk(chunk);
-        long afterEstimateSize = chunkHashSet.estimateSize();
-        allocator.allocateReservedMemory(afterEstimateSize - beforeEstimateSize);
     }
 
     public void buildChunks() {
@@ -69,8 +64,6 @@ public class BufferInputBatchQueue extends AbstractBatchQueue {
     }
 
     public void addChunk(Chunk chunk) {
-        long chunkEstimateSize = chunk.estimateSize();
-        allocator.allocateReservedMemory(chunkEstimateSize);
         chunks.add(chunk);
         totalRowCount.getAndAdd(chunk.getPositionCount());
     }
@@ -78,10 +71,6 @@ public class BufferInputBatchQueue extends AbstractBatchQueue {
     @Override
     protected Chunk nextChunk() {
         Chunk chunk = chunks.pollFirst();
-        if (chunk != null) {
-            long chunkEstimateSize = chunk.estimateSize();
-            allocator.releaseReservedMemory(chunkEstimateSize, true);
-        }
         return chunk;
     }
 

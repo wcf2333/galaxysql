@@ -30,18 +30,12 @@ import com.alibaba.polardbx.executor.operator.lookup.LookupConditionBuilder;
 import com.alibaba.polardbx.executor.operator.lookup.ShardingLookupConditionBuilder;
 import com.alibaba.polardbx.executor.operator.spill.SpillerFactory;
 import com.alibaba.polardbx.executor.utils.ExecUtils;
-import com.alibaba.polardbx.optimizer.OptimizerContext;
 import com.alibaba.polardbx.optimizer.context.ExecutionContext;
 import com.alibaba.polardbx.optimizer.core.datatype.DataType;
 import com.alibaba.polardbx.optimizer.core.join.LookupEquiJoinKey;
 import com.alibaba.polardbx.optimizer.core.join.LookupPredicate;
 import com.alibaba.polardbx.optimizer.core.rel.LogicalView;
-import com.alibaba.polardbx.optimizer.core.rel.PhyTableScanBuilder;
-import com.alibaba.polardbx.optimizer.memory.MemoryAllocatorCtx;
-import com.alibaba.polardbx.optimizer.partition.PartitionInfo;
-import com.alibaba.polardbx.optimizer.partition.PartitionInfoManager;
 import com.alibaba.polardbx.optimizer.partition.pruning.PartLookupPruningCache;
-import com.alibaba.polardbx.optimizer.rule.TddlRuleManager;
 import com.alibaba.polardbx.optimizer.utils.RelUtils;
 import com.google.common.base.Preconditions;
 import org.apache.calcite.sql.SqlBasicCall;
@@ -59,11 +53,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import static com.alibaba.polardbx.common.exception.code.ErrorCode.ERR_EXECUTE_ON_MYSQL;
-import static com.alibaba.polardbx.common.utils.GeneralUtil.buildPhysicalQuery;
 
 public class LookupTableScanExec extends TableScanExec implements LookupTableExec {
 
@@ -81,13 +72,6 @@ public class LookupTableScanExec extends TableScanExec implements LookupTableExe
     private final LookupPredicate predicate;
 
     private final List<LookupEquiJoinKey> allJoinKeys; // including null-safe equal columns (`<=>`)
-
-    /**
-     * for building {@code SqlNodeList}
-     */
-    MemoryAllocatorCtx conditionMemoryAllocator;
-
-    private long allocatedMem = 0;
 
     private PartLookupPruningCache cache;
 
@@ -128,17 +112,6 @@ public class LookupTableScanExec extends TableScanExec implements LookupTableExe
     }
 
     @Override
-    public void setMemoryAllocator(MemoryAllocatorCtx memoryAllocator) {
-        this.conditionMemoryAllocator = memoryAllocator;
-    }
-
-    @Override
-    public void releaseConditionMemory() {
-        conditionMemoryAllocator.releaseReservedMemory(allocatedMem, true);
-        allocatedMem = 0;
-    }
-
-    @Override
     public boolean shardEnabled() {
         return shardEnabled;
     }
@@ -149,14 +122,11 @@ public class LookupTableScanExec extends TableScanExec implements LookupTableExe
     private void updateNoShardedWhereSql(Chunk chunk) {
         LookupConditionBuilder builder = new LookupConditionBuilder(allJoinKeys, predicate, logicalView, this.context);
         SqlNode lookupCondition = builder.buildCondition(chunk);
-        long reserveSize = estimateConditionSize(lookupCondition, reservedSplits.size());
         for (Split split : reservedSplits) {
             JdbcSplit jdbcSplit = (JdbcSplit) split.getConnectorSplit();
             DynamicJdbcSplit dynamicSplit = new DynamicJdbcSplit(jdbcSplit, lookupCondition);
-            reserveSize += jdbcSplit.getSqlTemplate().size();
             scanClient.addSplit(split.copyWithSplit(dynamicSplit));
         }
-        reserveMemory(reserveSize);
     }
 
     /**
@@ -199,11 +169,9 @@ public class LookupTableScanExec extends TableScanExec implements LookupTableExe
 
         List<SqlNode> conditions = new ArrayList<>(numTable);
         boolean valid = false;
-        long reserveSize = 0;
         for (int tableIndex = 0; tableIndex < numTable; tableIndex++) {
             String tableName = shardedTableNameList.get(tableIndex).get(0);
             SqlNode shardedCondition = targetDbSqlNode.get(tableName);
-            reserveSize += estimateConditionSize(shardedCondition, 1);
             remainConditions[tableIndex] = new ArrayList<>();
 
             if (shardedCondition != null) {
@@ -220,10 +188,8 @@ public class LookupTableScanExec extends TableScanExec implements LookupTableExe
         }
         if (valid) {
             DynamicJdbcSplit dynamicSplit = new DynamicJdbcSplit(jdbcSplit, conditions);
-            reserveSize += jdbcSplit.getSqlTemplate().size();
             scanClient.addSplit(split.copyWithSplit(dynamicSplit));
         }
-        reserveMemory(reserveSize);
         // 如果当前batch不足以查完所有的condition，则需要用更多的batch
         handleRemainConditions(split, remainConditions);
     }
@@ -260,7 +226,6 @@ public class LookupTableScanExec extends TableScanExec implements LookupTableExe
     private void handleRemainConditions(Split split, List<SqlNode>[] remainConditions) {
         JdbcSplit jdbcSplit = (JdbcSplit) (split.getConnectorSplit());
 
-        long reserveSize = 0;
         final int numTable = remainConditions.length;
         int maxRemainBatchCount = Arrays.stream(remainConditions).mapToInt(List::size).max().getAsInt();
 
@@ -272,10 +237,8 @@ public class LookupTableScanExec extends TableScanExec implements LookupTableExe
                 conditions.add(condition);
             }
             DynamicJdbcSplit dynamicSplit = new DynamicJdbcSplit(jdbcSplit, conditions);
-            reserveSize += jdbcSplit.getSqlTemplate().size();
             scanClient.addSplit(split.copyWithSplit(dynamicSplit));
         }
-        reserveMemory(reserveSize);
     }
 
     private static SqlNode createPrunedInCondition(SqlNode key, List<SqlNode> values, int fromIndex, int toIndex) {
@@ -283,27 +246,6 @@ public class LookupTableScanExec extends TableScanExec implements LookupTableExe
         SqlBasicCall sqlBasicCall =
             new SqlBasicCall(SqlStdOperatorTable.IN, new SqlNode[] {key, prunedValues}, SqlParserPos.ZERO);
         return sqlBasicCall;
-    }
-
-    /**
-     * 当in value不裁剪全下推时
-     * SqlNode是复用的, 但最后生成hintSql是独立的
-     */
-    private long estimateConditionSize(SqlNode condition, int splitCount) {
-        if (condition == null || condition.getKind() != SqlKind.IN) {
-            return 0;
-        }
-        SqlNodeList sqlNodeList = ((SqlCall) condition).operand(1);
-        long conditionSize = sqlNodeList.estimateSize();
-        long hintSqlSize = conditionSize * splitCount;
-        return conditionSize + hintSqlSize;
-    }
-
-    private void reserveMemory(long reservedSize) {
-        if (reservedSize != 0) {
-            conditionMemoryAllocator.allocateReservedMemory(reservedSize);
-            allocatedMem += reservedSize;
-        }
     }
 
     @Override
@@ -343,8 +285,6 @@ public class LookupTableScanExec extends TableScanExec implements LookupTableExe
     @Override
     synchronized void doClose() {
         super.doClose();
-        releaseConditionMemory();
-        this.conditionMemoryAllocator = null;
         if (reservedSplits != null) {
             reservedSplits.clear();
         }

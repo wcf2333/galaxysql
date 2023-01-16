@@ -22,8 +22,6 @@ import com.alibaba.polardbx.executor.operator.util.BufferInputBatchQueue;
 import com.alibaba.polardbx.optimizer.context.ExecutionContext;
 import com.alibaba.polardbx.optimizer.core.expression.calc.IExpression;
 import com.alibaba.polardbx.optimizer.core.join.EquiJoinKey;
-import com.alibaba.polardbx.optimizer.memory.MemoryAllocatorCtx;
-import com.google.common.base.Preconditions;
 import org.apache.calcite.rel.core.JoinRelType;
 
 import java.util.List;
@@ -58,16 +56,6 @@ public class LookupJoinGsiExec extends LookupJoinExec implements LookupTableExec
     }
 
     @Override
-    public void setMemoryAllocator(MemoryAllocatorCtx memoryAllocator) {
-        ((LookupTableScanExec) outerInput).setMemoryAllocator(memoryAllocator);
-    }
-
-    @Override
-    public void releaseConditionMemory() {
-        ((LookupTableScanExec) outerInput).releaseConditionMemory();
-    }
-
-    @Override
     protected boolean resumeAfterSuspend() {
         //LookupJoinGsiExec shouldn't resume itself, because it will resume by other operators;
         doSuspend();
@@ -80,14 +68,11 @@ public class LookupJoinGsiExec extends LookupJoinExec implements LookupTableExec
     public boolean resume() {
         this.isFinish = false;
         this.outerNoMoreData = false;
-        this.batchQueue = new BufferInputBatchQueue(batchSize, outerInput.getDataTypes(), memoryAllocator, context);
+        this.batchQueue = new BufferInputBatchQueue(batchSize, outerInput.getDataTypes(), context);
         try {
             this.hashTable = null;
             this.positionLinks = null;
             this.beingConsumeOuter = true;
-            if (bufferMemoryAllocator != null) {
-                this.bufferMemoryAllocator.releaseReservedMemory(bufferMemoryAllocator.getReservedAllocated(), true);
-            }
             ((LookupTableScanExec) outerInput).resume();
         } catch (Throwable t) {
             this.isFinish = true;
