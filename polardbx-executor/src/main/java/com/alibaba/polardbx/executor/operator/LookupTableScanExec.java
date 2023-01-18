@@ -139,10 +139,7 @@ public class LookupTableScanExec extends TableScanExec implements LookupTableExe
         ShardingLookupConditionBuilder builder =
             new LookupConditionBuilder(allJoinKeys, predicate, logicalView, this.context).createSharding();
 
-        if (this.cache == null) {
-            this.cache = builder.buildLookupPruningCache();
-        }
-        Map<String, Map<String, SqlNode>> targetDBSqlNodeMap = builder.buildShardedCondition(chunk, context, cache);
+        Map<String, Map<String, SqlNode>> targetDBSqlNodeMap = builder.buildShardedCondition(chunk, context);
         boolean isAntiJoin = predicate.getOperator() == SqlStdOperatorTable.NOT_IN;
         for (Split split : reservedSplits) {
             updateShardedWhereSql(split, targetDBSqlNodeMap, isAntiJoin);
