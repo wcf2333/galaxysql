@@ -42,12 +42,11 @@ import static com.alibaba.polardbx.executor.utils.ExecUtils.buildOneChunk;
  * <p>
  * Note: outer 有可能比较复杂，inner 一定是view
  */
-public class LookupJoinExec extends AbstractBufferedJoinExec implements ResumeExec {
+public class LookupJoinExec extends AbstractBufferedJoinExec {
 
     int batchSize;
     boolean innerIsOpen;
     LookupTableExec lookupTableExec;
-    ResumeExec outerResumeExec;
     final ChunkConverter allOuterKeyChunkGetter;
 
     BufferInputBatchQueue batchQueue;
@@ -59,8 +58,6 @@ public class LookupJoinExec extends AbstractBufferedJoinExec implements ResumeEx
     int[] positionLinks;
 
     boolean beingConsumeOuter;
-
-    boolean shouldSuspend;
 
     boolean outerNoMoreData;
 
@@ -78,7 +75,6 @@ public class LookupJoinExec extends AbstractBufferedJoinExec implements ResumeEx
                           boolean allowMultiReadConnStreaming) {
         super(outerInput, innerInput, joinType, maxOneRow, joinKeys, otherCondition, null, null, context);
         getInnerLookupTableExec();
-        getOuterExec();
         initBatchSize(shardCount, parallelism);
 
         this.blocked = ProducerExecutor.NOT_BLOCKED;
@@ -118,20 +114,6 @@ public class LookupJoinExec extends AbstractBufferedJoinExec implements ResumeEx
         this.batchSize = batchSize;
     }
 
-    private void getOuterExec() {
-        Executor outerChild = outerInput;
-        while (outerChild != null) {
-            if (outerChild instanceof ResumeExec) {
-                outerResumeExec = (ResumeExec) outerChild;
-                break;
-            } else if (outerChild instanceof ProjectExec || outerChild instanceof VectorizedProjectExec) {
-                outerChild = outerChild.getInputs().get(0);
-            } else {
-                break;
-            }
-        }
-    }
-
     private void getInnerLookupTableExec() {
         Executor innerChild = innerInput;
         while (innerChild != null) {
@@ -152,23 +134,11 @@ public class LookupJoinExec extends AbstractBufferedJoinExec implements ResumeEx
         this.outerInput.open();
     }
 
-    protected boolean resumeAfterSuspend() {
-        doSuspend();
-        shouldSuspend = false;
-        beingConsumeOuter = true;
-        return resume();
-    }
-
     @Override
     Chunk doNextChunk() {
 
         if (isFinish) {
             return null;
-        } else if (shouldSuspend) {
-            if (!resumeAfterSuspend()) {
-                this.isFinish = true;
-                return null;
-            }
         }
 
         if (beingConsumeOuter) {
@@ -181,70 +151,26 @@ public class LookupJoinExec extends AbstractBufferedJoinExec implements ResumeEx
                     blocked = ProducerExecutor.NOT_BLOCKED;
                 }
             } else {
-                if (outerResumeExec != null) {
-                    if (outerResumeExec.shouldSuspend()) {
-                        outerResumeExec.doSuspend();
-                        beingConsumeOuter = false;
-                        blocked = ProducerExecutor.NOT_BLOCKED;
-                    } else if (outerInput.produceIsFinished()) {
-                        beingConsumeOuter = false;
-                        blocked = ProducerExecutor.NOT_BLOCKED;
-                    } else {
-                        blocked = outerInput.produceIsBlocked();
-                    }
+                if (outerInput.produceIsFinished()) {
+                    outerInput.close();
+                    beingConsumeOuter = false;
+                    blocked = ProducerExecutor.NOT_BLOCKED;
                 } else {
-                    if (outerInput.produceIsFinished()) {
-                        outerInput.close();
-                        beingConsumeOuter = false;
-                        blocked = ProducerExecutor.NOT_BLOCKED;
-                    } else {
-                        blocked = outerInput.produceIsBlocked();
-                    }
+                    blocked = outerInput.produceIsBlocked();
                 }
             }
             return null;
         } else {
             Chunk ret = super.doNextChunk();
             if (ret == null && outerNoMoreData) {
-                if (outerResumeExec != null) {
-                    //complete the look-up stage.
-                    shouldSuspend = true;
-                } else {
-                    isFinish = true;
-                }
+                isFinish = true;
             }
             return ret;
         }
     }
 
-
-
-    @Override
-    public boolean resume() {
-        outerNoMoreData = false;
-        this.batchQueue = new BufferInputBatchQueue(batchSize, outerInput.getDataTypes(), context);
-        this.hashTable = null;
-        this.positionLinks = null;
-        this.beingConsumeOuter = true;
-        if (outerResumeExec instanceof TableScanExec) {
-            return outerResumeExec.resume();
-        } else {
-            return !outerInput.produceIsFinished();
-        }
-    }
-
     protected LookupTableExec getLookupTableExec() {
         return lookupTableExec;
-    }
-
-    @Override
-    public boolean shouldSuspend() {
-        return shouldSuspend;
-    }
-
-    @Override
-    public void doSuspend() {
-        getLookupTableExec().doSuspend();
     }
 
     @Override

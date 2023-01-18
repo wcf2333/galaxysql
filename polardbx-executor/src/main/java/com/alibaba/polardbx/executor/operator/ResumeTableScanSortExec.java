@@ -148,20 +148,6 @@ public class ResumeTableScanSortExec extends TableScanSortExec implements Resume
     }
 
     @Override
-    public boolean shouldSuspend() {
-        return isFinish;
-    }
-
-    @Override
-    public void doSuspend() {
-        if (consumeResultSet != null) {
-            consumeResultSet.close();
-            consumeResultSet = null;
-        }
-        scanClient.cancelAllThreads(false);
-    }
-
-    @Override
     protected List<WorkProcessor<Row>> buildSortedStream() {
         List<WorkProcessor<Row>> sortedStreams = new ArrayList<>();
         TableScanClient.SplitResultSet splitResultSet = null;

@@ -43,14 +43,4 @@ public class DrivingStreamTableScanSortExec extends ResumeTableScanSortExec {
         }
         return ret;
     }
-
-    @Override
-    public boolean shouldSuspend() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void doSuspend() {
-        throw new UnsupportedOperationException();
-    }
 }

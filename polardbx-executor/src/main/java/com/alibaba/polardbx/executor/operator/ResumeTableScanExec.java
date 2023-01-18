@@ -108,21 +108,6 @@ public class ResumeTableScanExec extends TableScanExec implements ResumeExec {
         }
     }
 
-    @Override
-    public boolean shouldSuspend() {
-        return isFinish;
-    }
-
-    @Override
-    public void doSuspend() {
-        if (consumeResultSet != null) {
-            consumeResultSet.close();
-            consumeResultSet = null;
-        }
-
-        scanClient.cancelAllThreads(false);
-    }
-
     static class StreamJdbcSplit extends JdbcSplit {
 
         public final static String LIMIT = " LIMIT ";

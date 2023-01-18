@@ -38,8 +38,6 @@ public class LookupJoinGsiExec extends LookupJoinExec implements LookupTableExec
                              boolean allowMultiReadConn) {
         super(outerInput, innerInput, joinType, maxOneRow, joinKeys, allJoinKeys, otherCondition, context,
             shardCount, parallelism, allowMultiReadConn);
-        Preconditions
-            .checkArgument(outerResumeExec == outerInput, "The outerResumeExec should be outerInput directly!");
         Preconditions.checkArgument(
             (outerInput instanceof LookupTableScanExec) && (innerInput instanceof LookupTableScanExec),
             "All inputs should be TableScanExec!");
@@ -53,15 +51,6 @@ public class LookupJoinGsiExec extends LookupJoinExec implements LookupTableExec
     @Override
     public void updateLookupPredicate(Chunk chunk) {
         ((LookupTableScanExec) outerInput).updateLookupPredicate(chunk);
-    }
-
-    @Override
-    protected boolean resumeAfterSuspend() {
-        //LookupJoinGsiExec shouldn't resume itself, because it will resume by other operators;
-        doSuspend();
-        shouldSuspend = false;
-        beingConsumeOuter = true;
-        return false;
     }
 
     @Override

@@ -24,16 +24,4 @@ public interface ResumeExec {
      * False mean the Exec is really finish!
      */
     boolean resume();
-
-    /**
-     * @return True of false
-     * True mean the Exec is finish temporarily, and it should  suspend.
-     * False mean the Exec is still running, or it maybe really finished.
-     */
-    boolean shouldSuspend();
-
-    /**
-     * suspend the Exec.
-     */
-    void doSuspend();
 }

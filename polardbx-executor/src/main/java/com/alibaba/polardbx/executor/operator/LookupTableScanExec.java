@@ -269,20 +269,6 @@ public class LookupTableScanExec extends TableScanExec implements LookupTableExe
     }
 
     @Override
-    public boolean shouldSuspend() {
-        return isFinish;
-    }
-
-    @Override
-    public void doSuspend() {
-        if (consumeResultSet != null) {
-            consumeResultSet.close();
-            consumeResultSet = null;
-        }
-        scanClient.cancelAllThreads(false);
-    }
-
-    @Override
     synchronized void doClose() {
         super.doClose();
         if (reservedSplits != null) {
