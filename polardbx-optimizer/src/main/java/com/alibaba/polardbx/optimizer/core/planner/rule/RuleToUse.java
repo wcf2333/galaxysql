@@ -422,12 +422,10 @@ public class RuleToUse {
         LogicalJoinToHashJoinRule.OUTER_INSTANCE,
         LogicalJoinToSortMergeJoinRule.INSTANCE,
         LogicalSemiJoinToMaterializedSemiJoinRule.INSTANCE,
-        LogicalSemiJoinToMaterializedSemiJoinRule.TABLELOOKUP,
         LogicalSemiJoinToSemiNLJoinRule.INSTANCE,
         LogicalSemiJoinToSemiHashJoinRule.INSTANCE,
         LogicalSemiJoinToSemiSortMergeJoinRule.INSTANCE,
         LogicalSemiJoinToSemiBKAJoinRule.INSTANCE,
-        LogicalSemiJoinToSemiBKAJoinRule.TABLELOOKUP,
         // Agg Algorithm
         LogicalAggToSortAggRule.INSTANCE,
         LogicalAggToHashAggRule.INSTANCE,

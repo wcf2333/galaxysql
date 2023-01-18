@@ -55,14 +55,6 @@ public class LogicalSemiJoinToMaterializedSemiJoinRule extends RelOptRule {
                 operand(LogicalView.class, any()),
                 operand(RelSubset.class, any())), "LogicalSemiJoinToMaterializedSemiJoinRule:INSTANCE");
 
-    public static final LogicalSemiJoinToMaterializedSemiJoinRule TABLELOOKUP =
-        new LogicalSemiJoinToMaterializedSemiJoinRule(
-            operand(LogicalSemiJoin.class,
-                operand(LogicalTableLookup.class, null,
-                    JoinTableLookupTransposeRule.INNER_TABLE_LOOKUP_RIGHT_IS_LOGICALVIEW,
-                    operand(LogicalIndexScan.class, none())),
-                operand(RelSubset.class, any())), "LogicalSemiJoinToMaterializedSemiJoinRule:TABLELOOKUP");
-
     LogicalSemiJoinToMaterializedSemiJoinRule(RelOptRuleOperand operand, String desc) {
         super(operand, desc);
     }
@@ -86,75 +78,7 @@ public class LogicalSemiJoinToMaterializedSemiJoinRule extends RelOptRule {
 
     @Override
     public void onMatch(RelOptRuleCall call) {
-        if (call.getRule() == LogicalSemiJoinToMaterializedSemiJoinRule.INSTANCE) {
-            onMatchLogicalView(call);
-        } else if (call.getRule() == LogicalSemiJoinToMaterializedSemiJoinRule.TABLELOOKUP) {
-            onMatchTableLookup(call);
-        }
-    }
-
-    public void onMatchTableLookup(RelOptRuleCall call) {
-        final LogicalSemiJoin semiJoin = call.rel(0);
-        final LogicalTableLookup logicalTableLookup = call.rel(1);
-        final LogicalIndexScan logicalIndexScan = call.rel(2);
-        RelNode right = call.rel(3);
-
-        RexNode newCondition =
-            JoinConditionSimplifyRule.simplifyCondition(semiJoin.getCondition(), semiJoin.getCluster().getRexBuilder());
-
-        // FIXME: restrict the condition for tablelookup
-        // 1. must have column ref indexScan
-        // 2. when equal condition ref indexScan and Primary table, executor should use only indexScan ref to build
-        // Lookupkey, and let Primary table ref as other condition
-        if (!RexUtils
-            .isBatchKeysAccessCondition(semiJoin, newCondition,
-                semiJoin.getLeft().getRowType().getFieldCount(),
-                RexUtils.RestrictType.LEFT,
-                (Pair<RelDataType, RelDataType> relDataTypePair) -> typeCheck(relDataTypePair), true)) {
-            return;
-        }
-
-        if (!RexUtils.isBatchKeysAccessConditionRefIndexScan(newCondition, semiJoin,
-            false, logicalTableLookup)) {
-            return;
-        }
-
-        if (!canMaterializedSemiJoin(semiJoin)) {
-            return;
-        }
-
-        RelTraitSet inputTraitSet = semiJoin.getCluster().getPlanner().emptyTraitSet().replace(DrdsConvention.INSTANCE);
-
-        final LogicalIndexScan newLogicalIndexScan =
-            logicalIndexScan.copy(inputTraitSet);
-
-        LogicalTableLookup left = logicalTableLookup.copy(
-            inputTraitSet,
-            newLogicalIndexScan,
-            logicalTableLookup.getJoin().getRight(),
-            logicalTableLookup.getIndexTable(),
-            logicalTableLookup.getPrimaryTable(),
-            logicalTableLookup.getProject(),
-            logicalTableLookup.getJoin(),
-            logicalTableLookup.isRelPushedToPrimary(),
-            logicalTableLookup.getHints());
-        right = convert(right, right.getTraitSet().replace(DrdsConvention.INSTANCE));
-
-        ImmutableBitSet rightBitSet = ImmutableBitSet.range(0, right.getRowType().getFieldCount());
-        Boolean rightInputUnique = semiJoin.getCluster().getMetadataQuery().areColumnsUnique(right, rightBitSet);
-        boolean distinctInput = rightInputUnique == null ? true : !rightInputUnique;
-
-        MaterializedSemiJoin materializedSemiJoin = MaterializedSemiJoin.create(
-            semiJoin.getTraitSet().replace(DrdsConvention.INSTANCE), left, right, newCondition, semiJoin,
-            distinctInput);
-
-        RelOptCost fixedCost = CheckJoinHint.check(semiJoin, HintType.CMD_MATERIALIZED_SEMI_JOIN);
-        if (fixedCost != null) {
-            materializedSemiJoin.setFixedCost(fixedCost);
-        }
-        newLogicalIndexScan.setIsMGetEnabled(true);
-        newLogicalIndexScan.setJoin(materializedSemiJoin);
-        call.transformTo(materializedSemiJoin);
+        onMatchLogicalView(call);
     }
 
     public void onMatchLogicalView(RelOptRuleCall call) {

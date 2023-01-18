@@ -18,7 +18,6 @@ package com.alibaba.polardbx.executor.mpp.operator.factory;
 
 import com.alibaba.polardbx.executor.operator.Executor;
 import com.alibaba.polardbx.executor.operator.LookupJoinExec;
-import com.alibaba.polardbx.executor.operator.LookupJoinGsiExec;
 import com.alibaba.polardbx.executor.utils.ExecUtils;
 import com.alibaba.polardbx.optimizer.context.ExecutionContext;
 import com.alibaba.polardbx.optimizer.core.expression.calc.IExpression;
@@ -87,25 +86,11 @@ public class LookupJoinExecFactory extends ExecutorFactory {
             parallelism = innerLvExecFactory.getParallelism();
         }
 
-        boolean isLookUpGsi = false;
-        RelNode node = join.getOuter();
-        if (node instanceof Gather) {
-            node = ((Gather) node).getInput();
-        }
-        if (node instanceof LogicalIndexScan) {
-            isLookUpGsi = ((LogicalIndexScan) node).getJoin() != null;
-        }
-
         inner = getInputs().get(0).createExecutor(context, index);
         IExpression otherCondition = convertExpression(join.getCondition(), context);
 
-        if (!isLookUpGsi) {
-            ret = new LookupJoinExec(outer, inner, join.getJoinType(), maxOneRow, joinKeys, allJoinKeys,
-                otherCondition, context, shardCount, parallelism, allowMultiReadConn);
-        } else {
-            ret = new LookupJoinGsiExec(outer, inner, join.getJoinType(), maxOneRow, joinKeys, allJoinKeys,
-                otherCondition, context, shardCount, parallelism, allowMultiReadConn);
-        }
+        ret = new LookupJoinExec(outer, inner, join.getJoinType(), maxOneRow, joinKeys, allJoinKeys,
+            otherCondition, context, shardCount, parallelism, allowMultiReadConn);
 
         ret.setId(join.getRelatedId());
         if (context.getRuntimeStatistics() != null) {

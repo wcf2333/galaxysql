@@ -58,13 +58,6 @@ public class LogicalSemiJoinToSemiBKAJoinRule extends RelOptRule {
             operand(RelSubset.class, any()),
             operand(LogicalView.class, null, RelOptUtil.NO_COLLATION_AND_DISTRIBUTION, any())), "INSTANCE");
 
-    public static final LogicalSemiJoinToSemiBKAJoinRule TABLELOOKUP = new LogicalSemiJoinToSemiBKAJoinRule(
-        operand(LogicalSemiJoin.class,
-            operand(RelSubset.class, any()),
-            operand(LogicalTableLookup.class, null,
-                JoinTableLookupTransposeRule.INNER_TABLE_LOOKUP_RIGHT_IS_LOGICALVIEW,
-                operand(LogicalIndexScan.class, none()))), "TABLELOOKUP");
-
     LogicalSemiJoinToSemiBKAJoinRule(RelOptRuleOperand operand, String desc) {
         super(operand, "LogicalSemiJoinToSemiBKAJoinRule:" + desc);
     }
@@ -96,86 +89,7 @@ public class LogicalSemiJoinToSemiBKAJoinRule extends RelOptRule {
 
     @Override
     public void onMatch(RelOptRuleCall call) {
-        if (call.getRule() == LogicalSemiJoinToSemiBKAJoinRule.INSTANCE) {
-            onMatchLogicalView(call);
-        } else if (call.getRule() == LogicalSemiJoinToSemiBKAJoinRule.TABLELOOKUP) {
-            onMatchTableLookup(call);
-        }
-    }
-
-    private void onMatchTableLookup(RelOptRuleCall call) {
-        final LogicalSemiJoin join = call.rel(0);
-        RelNode left = call.rel(1);
-        final LogicalTableLookup logicalTableLookup = call.rel(2);
-        final LogicalIndexScan logicalIndexScan = call.rel(3);
-
-        RexNode newCondition =
-            JoinConditionSimplifyRule.simplifyCondition(join.getCondition(), join.getCluster().getRexBuilder());
-
-        RexUtils.RestrictType restrictType = RexUtils.RestrictType.RIGHT;
-        // FIXME: restrict the condition for tablelookup
-        // 1. must have column ref indexScan
-        // 2. when equal condition ref indexScan and Primary table, executor should use only indexScan ref to build
-        // Lookupkey, and let Primary table ref as other condition
-        if (!RexUtils.isBatchKeysAccessCondition(join, newCondition, join.getLeft().getRowType().getFieldCount(),
-            restrictType,
-            (Pair<RelDataType, RelDataType> relDataTypePair) -> CBOUtil.bkaTypeCheck(relDataTypePair))) {
-            return;
-        }
-
-        if (!RexUtils.isBatchKeysAccessConditionRefIndexScan(newCondition, join, true, logicalTableLookup)) {
-            return;
-        }
-
-        if (!canBKAJoin(join)) {
-            return;
-        }
-
-        final RelTraitSet leftTraitSet;
-        final RelTraitSet rightTraitSet;
-        if (RelOptUtil.NO_COLLATION_AND_DISTRIBUTION.test(join)) {
-            leftTraitSet = join.getCluster().getPlanner().emptyTraitSet().replace(DrdsConvention.INSTANCE);
-            rightTraitSet = join.getCluster().getPlanner().emptyTraitSet().replace(DrdsConvention.INSTANCE);
-        } else {
-            leftTraitSet = join.getLeft().getTraitSet().replace(DrdsConvention.INSTANCE);
-            rightTraitSet = join.getRight().getTraitSet().replace(DrdsConvention.INSTANCE);
-        }
-
-        left = convert(left, leftTraitSet);
-
-        LogicalIndexScan newLogicalIndexScan =
-            logicalIndexScan.copy(join.getCluster().getPlanner().emptyTraitSet().replace(DrdsConvention.INSTANCE));
-
-        LogicalTableLookup right = logicalTableLookup.copy(
-            rightTraitSet,
-            newLogicalIndexScan,
-            logicalTableLookup.getJoin().getRight(),
-            logicalTableLookup.getIndexTable(),
-            logicalTableLookup.getPrimaryTable(),
-            logicalTableLookup.getProject(),
-            logicalTableLookup.getJoin(),
-            logicalTableLookup.isRelPushedToPrimary(),
-            logicalTableLookup.getHints());
-
-        SemiBKAJoin bkaJoin = SemiBKAJoin.create(
-            join.getTraitSet().replace(DrdsConvention.INSTANCE),
-            left,
-            right,
-            newCondition,
-            join.getVariablesSet(),
-            join.getJoinType(),
-            join.isSemiJoinDone(),
-            ImmutableList.copyOf(join.getSystemFieldList()),
-            join.getHints(), join);
-        RelOptCost fixedCost = CheckJoinHint.check(join, HintType.CMD_SEMI_BKA_JOIN);
-        if (fixedCost != null) {
-            bkaJoin.setFixedCost(fixedCost);
-        }
-        newLogicalIndexScan.setIsMGetEnabled(true);
-        newLogicalIndexScan.setJoin(bkaJoin);
-        RelUtils.changeRowType(bkaJoin, join.getRowType());
-
-        call.transformTo(bkaJoin);
+        onMatchLogicalView(call);
     }
 
     private void onMatchLogicalView(RelOptRuleCall call) {
