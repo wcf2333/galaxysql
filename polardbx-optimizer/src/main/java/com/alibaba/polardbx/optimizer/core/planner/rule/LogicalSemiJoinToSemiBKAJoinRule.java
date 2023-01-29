@@ -16,9 +16,12 @@
 
 package com.alibaba.polardbx.optimizer.core.planner.rule;
 
+import com.alibaba.polardbx.common.utils.Pair;
+import com.alibaba.polardbx.optimizer.core.planner.rule.util.CBOUtil;
 import com.alibaba.polardbx.optimizer.core.rel.OSSTableScan;
 import com.alibaba.polardbx.optimizer.hint.util.CheckJoinHint;
 import com.alibaba.polardbx.optimizer.utils.RelUtils;
+import com.alibaba.polardbx.optimizer.utils.RexUtils;
 import com.google.common.collect.ImmutableList;
 import com.alibaba.polardbx.common.properties.ConnectionParams;
 import com.alibaba.polardbx.optimizer.PlannerContext;
@@ -38,6 +41,7 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.SemiJoin;
 import org.apache.calcite.rel.logical.LogicalSemiJoin;
+import org.apache.calcite.rel.type.RelDataType;
 
 /**
  * Avoid semi join produces too much data on the right LV
@@ -87,6 +91,16 @@ public class LogicalSemiJoinToSemiBKAJoinRule extends RelOptRule {
 
     private void onMatchLogicalView(RelOptRuleCall call) {
         final LogicalSemiJoin join = call.rel(0);
+        RexUtils.RestrictType restrictType = RexUtils.RestrictType.RIGHT;
+        if (!RexUtils.isBatchKeysAccessCondition(join, join.getCondition(), join.getLeft().getRowType().getFieldCount(),
+            restrictType,
+            (Pair<RelDataType, RelDataType> relDataTypePair) -> CBOUtil.bkaTypeCheck(relDataTypePair))) {
+            return;
+        }
+
+        if (!canBKAJoin(join)) {
+            return;
+        }
         RelNode left = call.rel(1);
         final LogicalView logicalView = call.rel(2);
         final RelTraitSet leftTraitSet;
@@ -121,5 +135,16 @@ public class LogicalSemiJoinToSemiBKAJoinRule extends RelOptRule {
         RelUtils.changeRowType(bkaJoin, join.getRowType());
 
         call.transformTo(bkaJoin);
+    }
+
+    private boolean canBKAJoin(SemiJoin join) {
+        RelNode right = join.getRight();
+        if (right instanceof RelSubset) {
+            right = ((RelSubset) right).getOriginal();
+        }
+        if (CBOUtil.checkBkaJoinForLogicalView(right)) {
+            return true;
+        }
+        return false;
     }
 }
