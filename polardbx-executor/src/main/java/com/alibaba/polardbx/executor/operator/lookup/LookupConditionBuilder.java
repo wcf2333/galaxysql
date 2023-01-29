@@ -176,7 +176,7 @@ public class LookupConditionBuilder {
         return new SqlBasicCall(p.getOperator(), new SqlNode[] {left, right}, SqlParserPos.ZERO);
     }
 
-    private List<Object> extractSimpleValues(Iterable<Tuple> chunk) {
+    protected List<Object> extractSimpleValues(Iterable<Tuple> chunk) {
         assert p.size() == 1;
         List<Object> values = new ArrayList<>();
         // Pick the target values from chunk and convert to row-oriented layout

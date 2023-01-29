@@ -16,6 +16,8 @@
 
 package com.alibaba.polardbx.executor.operator.lookup;
 
+import com.alibaba.polardbx.common.jdbc.ParameterContext;
+import com.alibaba.polardbx.common.model.sqljep.Comparative;
 import com.alibaba.polardbx.common.utils.Pair;
 import com.alibaba.polardbx.executor.chunk.Chunk;
 import com.alibaba.polardbx.optimizer.OptimizerContext;
@@ -27,8 +29,12 @@ import com.alibaba.polardbx.optimizer.core.join.LookupPredicate;
 import com.alibaba.polardbx.optimizer.core.rel.LogicalView;
 import com.alibaba.polardbx.optimizer.core.rel.ShardProcessor;
 import com.alibaba.polardbx.optimizer.core.rel.SimpleShardProcessor;
+import com.alibaba.polardbx.optimizer.rule.Partitioner;
 import com.alibaba.polardbx.optimizer.rule.TddlRuleManager;
 import com.alibaba.polardbx.rule.TableRule;
+import com.alibaba.polardbx.rule.model.Field;
+import com.alibaba.polardbx.rule.model.TargetDB;
+import com.alibaba.polardbx.rule.utils.CalcParamsAttribute;
 import org.apache.calcite.sql.SqlBasicCall;
 import org.apache.calcite.sql.SqlIdentifier;
 import org.apache.calcite.sql.SqlNode;
@@ -82,7 +88,15 @@ public class ShardingLookupConditionBuilder extends LookupConditionBuilder {
                     shardProcessor,
                     context);
             }
-            throw new RuntimeException("single key without simple rule not implement");
+            Chunk lookupKeysChunk = extractLookupKeys(joinKeysChunk);
+            Iterable<Tuple> distinctLookupKeys = distinctLookupKeysChunk(lookupKeysChunk);
+            return buildSimpleShardedCondition(
+                p.getColumn(0),
+                extractSimpleValues(distinctLookupKeys),
+                shardingColumns.get(0),
+                ruleManager,
+                context
+            );
         }
         throw new RuntimeException("multi key not implement");
     }
@@ -180,6 +194,52 @@ public class ShardingLookupConditionBuilder extends LookupConditionBuilder {
             }
         }
         return shardedCondition;
+    }
+
+    private Map<String, Map<String, SqlNode>> buildSimpleShardedCondition(
+        SqlIdentifier key, List<Object> values,
+        ColumnMeta shardingKeyMeta, TddlRuleManager tddlRuleManager,
+        ExecutionContext context) {
+
+        Partitioner partitioner = OptimizerContext.getContext(tddlRuleManager.getSchemaName()).getPartitioner();
+        Map<Integer, ParameterContext> params =
+            context.getParams() == null ? null : context.getParams().getCurrentParameter();
+        final List<TargetDB> targetDbList;
+        Map<String, Comparative> comparatives = Partitioner.getComparativeORWithSingleColumn(
+            shardingKeyMeta, values, shardingKeyMeta.getName());
+
+        // fullComparative保障了分表条件可见
+
+        Map<String, Comparative> fullComparative = partitioner.getInsertFullComparative(comparatives);
+        Map<String, Object> calcParams = new HashMap<>();
+        calcParams.put(CalcParamsAttribute.SHARD_FOR_EXTRA_DB, false);
+        calcParams.put(CalcParamsAttribute.COM_DB_TB, fullComparative);
+        calcParams.put(CalcParamsAttribute.CONN_TIME_ZONE, context.getTimeZone());
+        calcParams.put(CalcParamsAttribute.EXECUTION_CONTEXT, context);
+        targetDbList = tddlRuleManager.shard(v.getShardingTable(), false, false,
+            comparatives, params, calcParams, context);
+
+        Map<String, Map<String, SqlNode>> shardedConditions = new HashMap<>(targetDbList.size());
+        for (TargetDB targetDB : targetDbList) {
+            Map<String, SqlNode> tableConditions = new HashMap<>();
+            for (Map.Entry<String, Field> tableNameField : targetDB.getTableNameMap().entrySet()) {
+                Field field = tableNameField.getValue();
+                SqlNode sqlNode;
+
+                if (field == null) {
+                    // 考虑不带sourceKey的情况
+                    sqlNode = buildSimpleCondition(key, values);
+                } else {
+                    sqlNode = buildSimpleCondition(key, field.getSourceKeys().get(key.getSimple()));
+                }
+                if (sqlNode == FALSE_CONDITION) {
+                    continue;
+                }
+                tableConditions.put(tableNameField.getKey(), sqlNode);
+            }
+            shardedConditions.put(targetDB.getDbIndex(), tableConditions);
+        }
+        return shardedConditions;
     }
 
     private int[] buildShardingKeyPositions(List<ColumnMeta> shardingKeyMetas) {
