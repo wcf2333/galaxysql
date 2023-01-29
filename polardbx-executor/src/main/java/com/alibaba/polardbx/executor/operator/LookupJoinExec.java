@@ -16,6 +16,7 @@
 
 package com.alibaba.polardbx.executor.operator;
 
+import com.alibaba.polardbx.common.properties.ConnectionParams;
 import com.alibaba.polardbx.executor.chunk.Chunk;
 import com.alibaba.polardbx.executor.chunk.ChunkConverter;
 import com.alibaba.polardbx.executor.chunk.Converters;
@@ -41,6 +42,8 @@ import static com.alibaba.polardbx.executor.utils.ExecUtils.buildOneChunk;
  * Note: outer 有可能比较复杂，inner 一定是view
  */
 public class LookupJoinExec extends AbstractBufferedJoinExec {
+
+    int batchSize;
 
     LookupTableExec lookupTableExec;
     final ChunkConverter allOuterKeyChunkGetter;
@@ -71,6 +74,7 @@ public class LookupJoinExec extends AbstractBufferedJoinExec {
                 outerInput.getDataTypes(), outerKeyColumns, keyColumnTypes, context);
 
         this.streamJoin = true;
+        batchSize = context.getParamManager().getInt(ConnectionParams.JOIN_BLOCK_SIZE);
     }
 
     private void getInnerLookupTableExec() {
@@ -88,7 +92,7 @@ public class LookupJoinExec extends AbstractBufferedJoinExec {
     @Override
     public void doOpen() {
         createBlockBuilders();
-        this.batchQueue = new BufferInputBatchQueue(Integer.MAX_VALUE, outerInput.getDataTypes(), context);
+        this.batchQueue = new BufferInputBatchQueue(batchSize, outerInput.getDataTypes(), context);
         this.outerInput.open();
     }
 
@@ -104,6 +108,10 @@ public class LookupJoinExec extends AbstractBufferedJoinExec {
             Chunk outerChunk = outerInput.nextChunk();
             if (outerChunk != null) {
                 batchQueue.addChunk(outerChunk);
+                if (batchQueue.getTotalRowCount().get() > batchSize) {
+                    status = LookupJoinStatus.INIT_INNER_LOOKUP;
+                    blocked = ProducerExecutor.NOT_BLOCKED;
+                }
             } else {
                 if (outerInput.produceIsFinished()) {
                     outerInput.close();
@@ -119,10 +127,10 @@ public class LookupJoinExec extends AbstractBufferedJoinExec {
             buildKeyChunks = new ChunksIndex();
             saveProbeChunk = batchQueue.pop();
             if (saveProbeChunk != null) {
-                status = LookupJoinStatus.CACHE_INNER_RESULT;
                 Chunk allJoinKeys = allOuterKeyChunkGetter.apply(saveProbeChunk);
                 getLookupTableExec().updateLookupPredicate(allJoinKeys);
                 getLookupTableExec().open();
+                status = LookupJoinStatus.CACHE_INNER_RESULT;
             } else {
                 isFinish = true;
             }
@@ -149,7 +157,11 @@ public class LookupJoinExec extends AbstractBufferedJoinExec {
         case PROBE_AND_OUTPUT:
             Chunk ret = super.doNextChunk();
             if (ret == null) {
-                isFinish = true;
+                if (outerInput.produceIsFinished()) {
+                    isFinish = true;
+                } else {
+                    status = LookupJoinStatus.CONSUMING_OUTER;
+                }
             }
             return ret;
         default:
