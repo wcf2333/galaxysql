@@ -19,11 +19,15 @@ package com.alibaba.polardbx.executor.mpp.operator.factory;
 import com.alibaba.polardbx.common.properties.ConnectionParams;
 import com.alibaba.polardbx.executor.chunk.MutableChunk;
 import com.alibaba.polardbx.executor.operator.AbstractOSSTableScanExec;
+import com.alibaba.polardbx.executor.operator.LookupTableScanExec;
+import com.alibaba.polardbx.executor.operator.lookup.LookupConditionBuilder;
 import com.alibaba.polardbx.executor.vectorized.VectorizedExpression;
 import com.alibaba.polardbx.executor.vectorized.VectorizedExpressionUtils;
 import com.alibaba.polardbx.executor.vectorized.build.InputRefTypeChecker;
 import com.alibaba.polardbx.executor.vectorized.build.Rex2VectorizedExpressionVisitor;
 import com.alibaba.polardbx.executor.vectorized.build.VectorizedExpressionBuilder;
+import com.alibaba.polardbx.optimizer.core.join.LookupPredicate;
+import com.alibaba.polardbx.optimizer.core.join.LookupPredicateBuilder;
 import com.alibaba.polardbx.optimizer.core.rel.OSSTableScan;
 import com.alibaba.polardbx.optimizer.core.rel.OrcTableScan;
 import com.google.common.base.Preconditions;
@@ -49,8 +53,10 @@ import com.alibaba.polardbx.optimizer.core.join.LookupEquiJoinKey;
 import com.alibaba.polardbx.optimizer.core.rel.LogicalView;
 import com.alibaba.polardbx.optimizer.utils.CalciteUtils;
 import com.alibaba.polardbx.statistics.RuntimeStatHelper;
+import com.google.common.collect.Lists;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
+import org.apache.calcite.rel.metadata.RelColumnOrigin;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
@@ -84,6 +90,7 @@ public class LogicalViewExecutorFactory extends ExecutorFactory {
 
     private List<LookupEquiJoinKey> allJoinKeys; // including null-safe equal (`<=>`)
     private List<DataType> dataTypeList;
+    private LookupPredicate predicates;
 
     public LogicalViewExecutorFactory(
         LogicalView logicalView, int totalPrefetch, int parallelism, long maxRowCount, boolean bSort,
@@ -103,6 +110,19 @@ public class LogicalViewExecutorFactory extends ExecutorFactory {
             Join join = logicalView.getJoin();
             this.allJoinKeys = EquiJoinUtils.buildLookupEquiJoinKeys(join, join.getOuter(), join.getInner(),
                 (RexCall) join.getCondition(), join.getJoinType(), true);
+            RelMetadataQuery mq = join.getCluster().getMetadataQuery();
+            List<String> columnOrigins = Lists.newArrayList();
+            synchronized (mq) {
+                for (int i = 0; i < logicalView.getRowType().getFieldCount(); i++) {
+                    RelColumnOrigin columnOrigin = mq.getColumnOrigin(logicalView, i);
+                    if (columnOrigin == null) {
+                        columnOrigins.add(logicalView.getRowType().getFieldNames().get(i));
+                    } else {
+                        columnOrigins.add(columnOrigin.getColumnName());
+                    }
+                }
+            }
+            this.predicates = new LookupPredicateBuilder(join, columnOrigins).build(allJoinKeys);
         }
 
         if (enableRuntimeFilter) {
@@ -135,6 +155,10 @@ public class LogicalViewExecutorFactory extends ExecutorFactory {
     private Executor buildTableScanExec(ExecutionContext context) {
 
         TableScanExec scanExec;
+        Join join = logicalView.getJoin();
+        if (join != null) {
+            scanExec = createLookupScanExec(context, predicates, allJoinKeys);
+        } else {
             boolean useTransactionConnection = ExecUtils.useExplicitTransaction(context);
 
             if (bSort) {
@@ -163,6 +187,7 @@ public class LogicalViewExecutorFactory extends ExecutorFactory {
             }
 
             scanExec = buildTableScanExec(scanClient, context);
+        }
         scanExec.setId(logicalView.getRelatedId());
         if (context.getRuntimeStatistics() != null) {
             RuntimeStatHelper.registerStatForExec(logicalView, scanExec, context);
@@ -262,6 +287,20 @@ public class LogicalViewExecutorFactory extends ExecutorFactory {
         this.enableDrivingResume = true;
         Preconditions.checkArgument(
             !(enablePassiveResume && enableDrivingResume), "Don't support stream scan in different mode");
+    }
+
+    public TableScanExec createLookupScanExec(ExecutionContext context,
+                                              LookupPredicate predicate, List<LookupEquiJoinKey> allJoinKeys) {
+        boolean useTransaction = ExecUtils.useExplicitTransaction(context);
+
+        int prefetch = calculatePrefetchNum(counter.incrementAndGet(), parallelism);
+
+        TableScanClient scanClient = new TableScanClient(context, meta, useTransaction, prefetch);
+        TableScanExec scanExec =
+            new LookupTableScanExec(logicalView, context, scanClient.incrementSourceExec(), spillerFactory,
+                predicate, allJoinKeys, dataTypeList);
+        scanExec.setId(logicalView.getRelatedId());
+        return scanExec;
     }
 
     private int calculatePrefetchNum(int index, int parallelism) {

@@ -35,6 +35,7 @@ import org.apache.calcite.rel.core.JoinRelType;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * Abstract Join Executor
@@ -152,9 +153,17 @@ abstract class AbstractJoinExec extends AbstractExecutor {
         return false;
     }
 
+    protected static boolean checkNullRecord(Chunk chunk) {
+        int blockCount = chunk.getBlockCount();
+        int position = chunk.getBlock(0).getPositionCount();
+        boolean hasNullRecord = IntStream.range(0, position).anyMatch(
+            pos -> IntStream.range(0, blockCount).allMatch(t -> chunk.getBlock(t).isNull(pos)));
+        return hasNullRecord;
+    }
+
     protected static boolean checkContainsNull(ChunksIndex chunks) {
         for (int i = 0; i < chunks.getChunkCount(); i++) {
-            if (checkContainsNull(chunks.getChunk(i))) {
+            if (checkNullRecord(chunks.getChunk(i))) {
                 return true;
             }
         }

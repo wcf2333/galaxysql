@@ -20,6 +20,4 @@ import com.alibaba.polardbx.executor.chunk.Chunk;
 
 public interface LookupTableExec extends ResumeExec, Executor {
     void updateLookupPredicate(Chunk chunk);
-
-    boolean shardEnabled();
 }

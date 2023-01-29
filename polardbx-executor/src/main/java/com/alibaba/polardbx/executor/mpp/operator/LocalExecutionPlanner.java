@@ -48,6 +48,7 @@ import com.alibaba.polardbx.executor.mpp.operator.factory.LocalExchangeConsumerF
 import com.alibaba.polardbx.executor.mpp.operator.factory.LocalMergeSortExecutorFactory;
 import com.alibaba.polardbx.executor.mpp.operator.factory.LogicalCorrelateFactory;
 import com.alibaba.polardbx.executor.mpp.operator.factory.LogicalViewExecutorFactory;
+import com.alibaba.polardbx.executor.mpp.operator.factory.LookupJoinExecFactory;
 import com.alibaba.polardbx.executor.mpp.operator.factory.LoopJoinExecutorFactory;
 import com.alibaba.polardbx.executor.mpp.operator.factory.NonBlockGeneralExecFactory;
 import com.alibaba.polardbx.executor.mpp.operator.factory.OutputExecutorFactory;
@@ -95,6 +96,7 @@ import com.alibaba.polardbx.optimizer.core.rel.MergeSort;
 import com.alibaba.polardbx.optimizer.core.rel.NLJoin;
 import com.alibaba.polardbx.optimizer.core.rel.PhysicalFilter;
 import com.alibaba.polardbx.optimizer.core.rel.PhysicalProject;
+import com.alibaba.polardbx.optimizer.core.rel.SemiBKAJoin;
 import com.alibaba.polardbx.optimizer.core.rel.SemiHashJoin;
 import com.alibaba.polardbx.optimizer.core.rel.SemiNLJoin;
 import com.alibaba.polardbx.optimizer.core.rel.SemiSortMergeJoin;
@@ -162,7 +164,7 @@ public class LocalExecutionPlanner {
 
     private static final Set<Class<? extends RelNode>> SUPPORT_NODES = ImmutableSet.of(
         LogicalView.class, HashJoin.class, SemiHashJoin.class, SortMergeJoin.class, SemiSortMergeJoin.class,
-        BKAJoin.class, NLJoin.class, SemiNLJoin.class, HashAgg.class,
+        BKAJoin.class, SemiBKAJoin.class, NLJoin.class, SemiNLJoin.class, HashAgg.class,
         SortAgg.class, LogicalProject.class, LogicalExpand.class, LogicalFilter.class, MemSort.class, Limit.class,
         TopN.class, LogicalSort.class, LogicalValues.class, RemoteSourceNode.class, Gather.class,
         MergeSort.class, LogicalUnion.class, Exchange.class, HashGroupJoin.class, LogicalExpand.class,
@@ -453,6 +455,8 @@ public class LocalExecutionPlanner {
             );
         } else if (current instanceof HashGroupJoin) {
             return visitGroupJoin(parent, (HashGroupJoin) current, pipelineFragment);
+        } else if (current instanceof SemiBKAJoin) {
+            return visitBKAJoin((Join) current, pipelineFragment);
         } else if (current instanceof NLJoin) {
             return visitNLJoin((Join) current, pipelineFragment, ((NLJoin) current).getCondition(), false, null, null);
         } else if (current instanceof SemiNLJoin) {
@@ -519,7 +523,7 @@ public class LocalExecutionPlanner {
         }
     }
 
-    private RexNode buildAntiCondition(SemiNLJoin nlJoin) {
+    public static RexNode buildAntiCondition(SemiNLJoin nlJoin) {
         List<RexNode> operands = nlJoin.getOperands();
         if (operands == null || operands.size() == 0) {
             return null;
@@ -968,6 +972,23 @@ public class LocalExecutionPlanner {
 
             return joinExecutorFactory;
         }
+    }
+
+    private ExecutorFactory visitBKAJoin(Join current, PipelineFragment pipelineFragment) {
+
+        boolean oldExpandView = expandView;
+        ExecutorFactory innerExecutorFactory;
+
+        try {
+            expandView = true;
+            innerExecutorFactory = visit(current, current.getInner(), pipelineFragment);
+        } finally {
+            expandView = oldExpandView;
+        }
+
+        ExecutorFactory outerExecutorFactory = visit(current, current.getOuter(), pipelineFragment);
+
+        return new LookupJoinExecFactory(current, outerExecutorFactory, innerExecutorFactory);
     }
 
     private ExecutorFactory visitValue(LogicalValues current, PipelineFragment pipelineFragment) {

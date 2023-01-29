@@ -121,50 +121,21 @@ abstract class AbstractBufferedJoinExec extends AbstractJoinExec {
             return null;
         }
 
-        if (!streamJoin) {
-            long start = System.currentTimeMillis();
-            while (currentPosition() < chunkLimit) {
-                if (probeChunk == null || probePosition == probeChunk.getPositionCount()) {
-                    if (System.currentTimeMillis() - start >= MppConfig.getInstance().getSplitRunQuanta()) {
-                        //exceed 1 second
-                        probeJoinKeyChunk = null;
-                        probeKeyHashCode = null;
-                        probeChunk = null;
-                        break;
-                    }
-                    probeChunk = nextProbeChunk();
-                    if (probeChunk == null) {
-                        probeJoinKeyChunk = null;
-                        probeKeyHashCode = null;
-                        break;
-                    } else {
-                        if (isEquiJoin) {
-                            probeJoinKeyChunk = getProbeKeyChunkGetter().apply(probeChunk);
-                            probeKeyHashCode = probeJoinKeyChunk.hashCodeVector();
-                        }
-                        probePosition = 0;
-                    }
+        if (probeChunk == null || probePosition == probeChunk.getPositionCount()) {
+            probeChunk = nextProbeChunk();
+            if (probeChunk == null) {
+                probeJoinKeyChunk = null;
+                probeKeyHashCode = null;
+            } else {
+                if (isEquiJoin) {
+                    probeJoinKeyChunk = getProbeKeyChunkGetter().apply(probeChunk);
+                    probeKeyHashCode = probeJoinKeyChunk.hashCodeVector();
                 }
-                // Process outer rows in this input chunk
+                probePosition = 0;
                 nextRows();
             }
         } else {
-            if (probeChunk == null || probePosition == probeChunk.getPositionCount()) {
-                probeChunk = nextProbeChunk();
-                if (probeChunk == null) {
-                    probeJoinKeyChunk = null;
-                    probeKeyHashCode = null;
-                } else {
-                    if (isEquiJoin) {
-                        probeJoinKeyChunk = getProbeKeyChunkGetter().apply(probeChunk);
-                        probeKeyHashCode = probeJoinKeyChunk.hashCodeVector();
-                    }
-                    probePosition = 0;
-                    nextRows();
-                }
-            } else {
-                nextRows();
-            }
+            nextRows();
         }
 
         if (outerJoin && !outputNullRowInTime()) {
@@ -299,8 +270,7 @@ abstract class AbstractBufferedJoinExec extends AbstractJoinExec {
             } else {
                 throw new AssertionError();
             }
-        } else if (joinType == JoinRelType.ANTI && antiJoinOperands != null
-            && buildChunks.getChunk(0).getBlockCount() == 1) {
+        } else if (joinType == JoinRelType.ANTI && antiJoinOperands != null) {
             // Special case for x NOT IN (... NULL ...) which results in NULL
             if (checkContainsNull(buildChunks)) {
                 passNothing = true;

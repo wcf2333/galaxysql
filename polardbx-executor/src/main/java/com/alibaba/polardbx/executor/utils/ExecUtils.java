@@ -972,9 +972,10 @@ public class ExecUtils {
                 }
             }
         } else {
+            boolean[] nullPos = getNullPos(keyChunk, ignoreNullBlocks);
             // Otherwise we have to check nullability for each row
             for (int offset = 0; offset < keyChunk.getPositionCount(); offset++, position++) {
-                if (checkJoinKeysNulSafe(keyChunk, offset, ignoreNullBlocks)) {
+                if (!nullPos[offset]) {
                     int next = hashTable.put(position, hashes[offset]);
                     positionLinks[position] = next;
                     if (bloomFilter != null) {
@@ -983,6 +984,20 @@ public class ExecUtils {
                 }
             }
         }
+    }
+
+    private static boolean[] getNullPos(Chunk keyChunk, List<Integer> ignoreNullBlocks) {
+        int count = keyChunk.getPositionCount();
+        boolean[] res = new boolean[count];
+        for (int i = 0; i < count; ++i) {
+            for (int j = 0; j < ignoreNullBlocks.size(); ++j) {
+                if (keyChunk.getBlock(ignoreNullBlocks.get(j)).isNull(i)) {
+                    res[i] = true;
+                    break;
+                }
+            }
+        }
+        return res;
     }
 
     public static boolean checkJoinKeysAllNullSafe(Chunk keyChunk, List<Integer> ignoreNullBlocks) {
