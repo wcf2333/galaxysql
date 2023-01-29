@@ -27,6 +27,7 @@ import com.alibaba.polardbx.executor.chunk.Chunk;
 import com.alibaba.polardbx.executor.mpp.metadata.Split;
 import com.alibaba.polardbx.executor.mpp.split.JdbcSplit;
 import com.alibaba.polardbx.executor.operator.lookup.LookupConditionBuilder;
+import com.alibaba.polardbx.executor.operator.lookup.ShardingLookupConditionBuilder;
 import com.alibaba.polardbx.executor.operator.spill.SpillerFactory;
 import com.alibaba.polardbx.executor.utils.ExecUtils;
 import com.alibaba.polardbx.optimizer.context.ExecutionContext;
@@ -56,17 +57,21 @@ import java.util.Map;
 import static com.alibaba.polardbx.common.exception.code.ErrorCode.ERR_EXECUTE_ON_MYSQL;
 
 public class LookupTableScanExec extends TableScanExec implements LookupTableExec {
+    private final boolean shardEnabled;
+
+    List<Split> reservedSplits;
 
     private final LookupPredicate predicate;
 
     private final List<LookupEquiJoinKey> allJoinKeys; // including null-safe equal columns (`<=>`)
 
     public LookupTableScanExec(LogicalView logicalView, ExecutionContext context, TableScanClient scanClient,
-                               SpillerFactory spillerFactory,
+                               boolean shardEnabled, SpillerFactory spillerFactory,
                                LookupPredicate predicate,
                                List<LookupEquiJoinKey> allJoinKeys, List<DataType> dataTypeList) {
         super(logicalView, context, scanClient, Long.MAX_VALUE, spillerFactory, dataTypeList);
         this.predicate = predicate;
+        this.shardEnabled = shardEnabled;
         this.allJoinKeys = allJoinKeys;
     }
 
@@ -76,18 +81,75 @@ public class LookupTableScanExec extends TableScanExec implements LookupTableExe
             throw new TddlRuntimeException(ERR_EXECUTE_ON_MYSQL, "input split not ready");
         }
 
-        List<Split> reservedSplits = new ArrayList<>();
-        reservedSplits.addAll(scanClient.getSplitList());
+        if (reservedSplits == null) {
+            reservedSplits = new ArrayList<>();
+            reservedSplits.addAll(scanClient.getSplitList());
+        }
+
         scanClient.getSplitList().clear();
 
-        // 不分片 把值全部下推
-        updateNoShardedWhereSql(reservedSplits, chunk);
+        if (shardEnabled) {
+            updateShardedWhereSql(chunk);
+        } else {
+            // 不分片 把值全部下推
+            updateNoShardedWhereSql(chunk);
+        }
+    }
+
+    /**
+     * 当判断可以将value按分片裁剪后
+     * 为每一个 DynamicJdbcSplit 分配对应的where条件
+     */
+    private void updateShardedWhereSql(Chunk chunk) {
+
+        // 获取到每个sqlNode对应的分片
+        ShardingLookupConditionBuilder builder =
+            new LookupConditionBuilder(allJoinKeys, predicate, logicalView, this.context).createSharding();
+
+        Map<String, Map<String, SqlNode>> targetDBSqlNodeMap = builder.buildShardedCondition(chunk, context);
+        for (Split split : reservedSplits) {
+            updateShardedWhereSql(split, targetDBSqlNodeMap);
+        }
+    }
+
+    private void updateShardedWhereSql(Split split,
+                                       Map<String, Map<String, SqlNode>> targetDBSqlNodeMap) {
+        JdbcSplit jdbcSplit = (JdbcSplit) (split.getConnectorSplit());
+
+        List<List<String>> shardedTableNameList = jdbcSplit.getTableNames();
+        String dbIndex = jdbcSplit.getDbIndex();
+        Map<String, SqlNode> targetDbSqlNode = targetDBSqlNodeMap.get(dbIndex);
+        if (targetDbSqlNode == null) {
+            // 分库不存在的情况就不考虑
+            return;
+        }
+
+        // 由于BKA plan在同一个split中使用了UNION
+        // 需要记录下向每个分表发送的sql
+        final int numTable = shardedTableNameList.size();
+
+        List<SqlNode> conditions = new ArrayList<>(numTable);
+        for (int tableIndex = 0; tableIndex < numTable; tableIndex++) {
+            String tableName = shardedTableNameList.get(tableIndex).get(0);
+            SqlNode shardedCondition = targetDbSqlNode.get(tableName);
+
+            if (shardedCondition != null) {
+                conditions.add(shardedCondition);
+            } else {
+                // nothing to lookup for this table
+                conditions.add(LookupConditionBuilder.FALSE_CONDITION);
+            }
+        }
+        if (conditions.size() > 0) {
+            DynamicJdbcSplit dynamicSplit = new DynamicJdbcSplit(jdbcSplit, conditions);
+            scanClient.addSplit(split.copyWithSplit(dynamicSplit));
+        }
     }
 
     /**
      * 不分片，把值全部下推
      */
-    private void updateNoShardedWhereSql(List<Split> reservedSplits, Chunk chunk) {
+    private void updateNoShardedWhereSql(Chunk chunk) {
         LookupConditionBuilder builder = new LookupConditionBuilder(allJoinKeys, predicate, logicalView, this.context);
         SqlNode lookupCondition = builder.buildCondition(chunk);
         for (Split split : reservedSplits) {
@@ -124,11 +186,18 @@ public class LookupTableScanExec extends TableScanExec implements LookupTableExe
 
     static class DynamicJdbcSplit extends JdbcSplit {
 
-        private SqlNode lookupConditions;
+        private List<SqlNode> lookupConditions;
 
         public DynamicJdbcSplit(JdbcSplit jdbcSplit, SqlNode lookupCondition) {
             super(jdbcSplit);
-            this.lookupConditions = lookupCondition;
+            this.lookupConditions = Collections.nCopies(jdbcSplit.getTableNames().size(), lookupCondition);
+            this.supportGalaxyPrepare = false;
+        }
+
+        public DynamicJdbcSplit(JdbcSplit jdbcSplit, List<SqlNode> lookupConditions) {
+            super(jdbcSplit);
+            Preconditions.checkArgument(jdbcSplit.getTableNames().size() == lookupConditions.size());
+            this.lookupConditions = lookupConditions;
             this.supportGalaxyPrepare = false;
         }
 
@@ -139,8 +208,12 @@ public class LookupTableScanExec extends TableScanExec implements LookupTableExe
                 String query = new UnionBytesSql(sqlTemplate.getBytesArray(), sqlTemplate.isParameterLast(), tableNum,
                         orderBy == null ? null : orderBy.getBytes(), null).toString(
                         null);
-                query = StringUtils.replace(query, "'bka_magic' = 'bka_magic'",
-                    RelUtils.toNativeSql(lookupConditions));
+                for (SqlNode condition : lookupConditions) {
+                    if (condition != null) {
+                        query = StringUtils.replace(query, "'bka_magic' = 'bka_magic'",
+                            RelUtils.toNativeSql(condition), 1);
+                    }
+                }
                 hintSql = query;
             }
             return BytesSql.getBytesSql(hintSql);
@@ -153,7 +226,7 @@ public class LookupTableScanExec extends TableScanExec implements LookupTableExe
                     if (flattenParams == null) {
                         List<List<ParameterContext>> params = getParams();
                         flattenParams = new ArrayList<>(params.size() > 0 ? params.get(0).size() : 0);
-                        for (int i = 0; i < params.size(); i++) {
+                        for (int i = 0; i < lookupConditions.size(); i++) {
                             flattenParams.addAll(params.get(i));
                         }
                     }

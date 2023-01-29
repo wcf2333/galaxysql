@@ -68,7 +68,7 @@ import static com.alibaba.polardbx.optimizer.core.join.LookupPredicateBuilder.ge
 public class LookupConditionBuilder {
 
     static final SqlNode TRUE_CONDITION = SqlLiteral.createBoolean(true, SqlParserPos.ZERO);
-    static final SqlNode FALSE_CONDITION = SqlLiteral.createBoolean(false, SqlParserPos.ZERO);
+    public static final SqlNode FALSE_CONDITION = SqlLiteral.createBoolean(false, SqlParserPos.ZERO);
 
     final List<LookupEquiJoinKey> jk;
     final LookupPredicate p;
@@ -99,6 +99,43 @@ public class LookupConditionBuilder {
         } else {
             return buildMultiCondition(distinctLookupKeys);
         }
+    }
+
+    /**
+     * Can do shard if join predicate contains (all) DB sharding key(s)
+     */
+    public boolean canShard() {
+        String logTbNale = v.getShardingTable();
+        String schemaName = v.getSchemaName();
+
+        TableMeta tableMeta = OptimizerContext.getContext(schemaName).getLatestSchemaManager().getTable(logTbNale);
+        if (TableTopologyUtil.isSingle(tableMeta) || TableTopologyUtil.isBroadcast(tableMeta)) {
+            // no need to do lookup sharding
+            return false;
+        }
+
+        TddlRuleManager tddlRuleManager = OptimizerContext.getContext(schemaName).getRuleManager();
+
+        List<String> joinKeyColumnNames = collectJoinKeyColumns();
+        TableRule rule = tddlRuleManager.getTableRule(v.getShardingTable());
+        if (rule == null) {
+            return false;
+        }
+        return containsAllIgnoreCase(joinKeyColumnNames, rule.getDbPartitionKeys());
+    }
+
+    public ShardingLookupConditionBuilder createSharding() {
+        return new ShardingLookupConditionBuilder(jk, p, v, ec);
+    }
+
+    static Iterable<Tuple> buildTupleIterable(Chunk chunk) {
+        return Iterables.transform(chunk, row -> row != null ? Tuple.from(row) : null);
+    }
+
+    static boolean containsAllIgnoreCase(Collection<String> a, Collection<String> b) {
+        List<String> ca = a.stream().map(String::toLowerCase).collect(Collectors.toList());
+        List<String> cb = b.stream().map(String::toLowerCase).collect(Collectors.toList());
+        return ca.containsAll(cb);
     }
 
     /**
@@ -208,6 +245,11 @@ public class LookupConditionBuilder {
                 .collect(Collectors.toList());
             return Iterators.concat(iterators.iterator());
         };
+    }
+
+    List<String> collectJoinKeyColumns() {
+        return jk.stream().map(
+            key -> getJoinKeyColumnName(key)).collect(Collectors.toList());
     }
 
     static class Tuple {

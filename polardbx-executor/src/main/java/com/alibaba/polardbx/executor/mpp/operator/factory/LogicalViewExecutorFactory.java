@@ -157,7 +157,14 @@ public class LogicalViewExecutorFactory extends ExecutorFactory {
         TableScanExec scanExec;
         Join join = logicalView.getJoin();
         if (join != null) {
-            scanExec = createLookupScanExec(context, predicates, allJoinKeys);
+            boolean canShard = false;
+            if (context.getParamManager().getBoolean(ConnectionParams.ENABLE_BKA_PRUNING)) {
+                LogicalView lv = this.getLogicalView();
+                if (lv.getTableNames().size() == 1) {
+                    canShard = new LookupConditionBuilder(allJoinKeys, predicates, lv, context).canShard();
+                }
+            }
+            scanExec = createLookupScanExec(context, canShard, predicates, allJoinKeys);
         } else {
             boolean useTransactionConnection = ExecUtils.useExplicitTransaction(context);
 
@@ -289,7 +296,7 @@ public class LogicalViewExecutorFactory extends ExecutorFactory {
             !(enablePassiveResume && enableDrivingResume), "Don't support stream scan in different mode");
     }
 
-    public TableScanExec createLookupScanExec(ExecutionContext context,
+    public TableScanExec createLookupScanExec(ExecutionContext context, boolean canShard,
                                               LookupPredicate predicate, List<LookupEquiJoinKey> allJoinKeys) {
         boolean useTransaction = ExecUtils.useExplicitTransaction(context);
 
@@ -297,7 +304,7 @@ public class LogicalViewExecutorFactory extends ExecutorFactory {
 
         TableScanClient scanClient = new TableScanClient(context, meta, useTransaction, prefetch);
         TableScanExec scanExec =
-            new LookupTableScanExec(logicalView, context, scanClient.incrementSourceExec(), spillerFactory,
+            new LookupTableScanExec(logicalView, context, scanClient.incrementSourceExec(), canShard, spillerFactory,
                 predicate, allJoinKeys, dataTypeList);
         scanExec.setId(logicalView.getRelatedId());
         return scanExec;
