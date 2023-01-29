@@ -48,9 +48,7 @@ import com.alibaba.polardbx.executor.mpp.operator.factory.LocalExchangeConsumerF
 import com.alibaba.polardbx.executor.mpp.operator.factory.LocalMergeSortExecutorFactory;
 import com.alibaba.polardbx.executor.mpp.operator.factory.LogicalCorrelateFactory;
 import com.alibaba.polardbx.executor.mpp.operator.factory.LogicalViewExecutorFactory;
-import com.alibaba.polardbx.executor.mpp.operator.factory.LookupJoinExecFactory;
 import com.alibaba.polardbx.executor.mpp.operator.factory.LoopJoinExecutorFactory;
-import com.alibaba.polardbx.executor.mpp.operator.factory.MaterializedJoinExecFactory;
 import com.alibaba.polardbx.executor.mpp.operator.factory.NonBlockGeneralExecFactory;
 import com.alibaba.polardbx.executor.mpp.operator.factory.OutputExecutorFactory;
 import com.alibaba.polardbx.executor.mpp.operator.factory.OverWindowFramesExecFactory;
@@ -92,13 +90,11 @@ import com.alibaba.polardbx.optimizer.core.rel.Limit;
 import com.alibaba.polardbx.optimizer.core.rel.LocalBufferNode;
 import com.alibaba.polardbx.optimizer.core.rel.LogicalInsert;
 import com.alibaba.polardbx.optimizer.core.rel.LogicalView;
-import com.alibaba.polardbx.optimizer.core.rel.MaterializedSemiJoin;
 import com.alibaba.polardbx.optimizer.core.rel.MemSort;
 import com.alibaba.polardbx.optimizer.core.rel.MergeSort;
 import com.alibaba.polardbx.optimizer.core.rel.NLJoin;
 import com.alibaba.polardbx.optimizer.core.rel.PhysicalFilter;
 import com.alibaba.polardbx.optimizer.core.rel.PhysicalProject;
-import com.alibaba.polardbx.optimizer.core.rel.SemiBKAJoin;
 import com.alibaba.polardbx.optimizer.core.rel.SemiHashJoin;
 import com.alibaba.polardbx.optimizer.core.rel.SemiNLJoin;
 import com.alibaba.polardbx.optimizer.core.rel.SemiSortMergeJoin;
@@ -166,7 +162,7 @@ public class LocalExecutionPlanner {
 
     private static final Set<Class<? extends RelNode>> SUPPORT_NODES = ImmutableSet.of(
         LogicalView.class, HashJoin.class, SemiHashJoin.class, SortMergeJoin.class, SemiSortMergeJoin.class,
-        BKAJoin.class, SemiBKAJoin.class, NLJoin.class, SemiNLJoin.class, MaterializedSemiJoin.class, HashAgg.class,
+        BKAJoin.class, NLJoin.class, SemiNLJoin.class, HashAgg.class,
         SortAgg.class, LogicalProject.class, LogicalExpand.class, LogicalFilter.class, MemSort.class, Limit.class,
         TopN.class, LogicalSort.class, LogicalValues.class, RemoteSourceNode.class, Gather.class,
         MergeSort.class, LogicalUnion.class, Exchange.class, HashGroupJoin.class, LogicalExpand.class,
@@ -457,10 +453,6 @@ public class LocalExecutionPlanner {
             );
         } else if (current instanceof HashGroupJoin) {
             return visitGroupJoin(parent, (HashGroupJoin) current, pipelineFragment);
-        } else if (current instanceof BKAJoin) {
-            return visitBKAJoin((Join) current, pipelineFragment);
-        } else if (current instanceof SemiBKAJoin) {
-            return visitBKAJoin((Join) current, pipelineFragment);
         } else if (current instanceof NLJoin) {
             return visitNLJoin((Join) current, pipelineFragment, ((NLJoin) current).getCondition(), false, null, null);
         } else if (current instanceof SemiNLJoin) {
@@ -468,8 +460,6 @@ public class LocalExecutionPlanner {
             boolean maxOneRow = nlJoin.getJoinType() == JoinRelType.LEFT || nlJoin.getJoinType() == JoinRelType.INNER;
             return visitNLJoin(nlJoin, pipelineFragment, nlJoin.getCondition(), maxOneRow, nlJoin.getOperands(),
                 buildAntiCondition(nlJoin));
-        } else if (current instanceof MaterializedSemiJoin) {
-            return visitMaterializedSemiJoin((MaterializedSemiJoin) current, pipelineFragment);
         } else if (current instanceof HashAgg) {
             return visitHashAgg((HashAgg) current, pipelineFragment);
         } else if (current instanceof SortAgg) {
@@ -978,70 +968,6 @@ public class LocalExecutionPlanner {
 
             return joinExecutorFactory;
         }
-    }
-
-    private ExecutorFactory visitBKAJoin(Join current, PipelineFragment pipelineFragment) {
-        forbidMultipleReadConn = this.forbidMultipleReadConn ||
-            !ExecUtils.allowMultipleReadConns(context, null);
-        if (defaultParallelism != 1 && forbidMultipleReadConn) {
-            //FIXME 本来这里应该根据forbidMultipleReadConn来设置并发度的，这里投机取巧下知识使用useTransaction
-            //事务下并发度必须为1,并且当前并发度需要被保持
-            pipelineFragment.holdSingleTonParallelism();
-        }
-
-        ExecutorFactory outerExecutorFactory = visit(current, current.getOuter(), pipelineFragment);
-        boolean oldExpandView = expandView;
-        ExecutorFactory innerExecutorFactory;
-
-        try {
-            expandView = true;
-            innerExecutorFactory = visit(current, current.getInner(), pipelineFragment);
-            if (forbidMultipleReadConn) {
-                Preconditions.checkArgument(pipelineFragment.getParallelism() == 1,
-                    "The LookupJoinExec's parallelism must be 1!");
-            }
-        } finally {
-            expandView = oldExpandView;
-        }
-
-        if (pipelineFragment.isContainLimit() && outerExecutorFactory instanceof LogicalViewExecutorFactory) {
-            if (((LogicalViewExecutorFactory) outerExecutorFactory).getLogicalView().getJoin() == null) {
-                ((LogicalViewExecutorFactory) outerExecutorFactory).enablePassiveResumeSource();
-            }
-        }
-        return new LookupJoinExecFactory(current, outerExecutorFactory, innerExecutorFactory);
-    }
-
-    private ExecutorFactory visitMaterializedSemiJoin(MaterializedSemiJoin current, PipelineFragment pipelineFragment) {
-        List<DataType> columns = CalciteUtils.getTypes(current.getInner().getRowType());
-        ExecutorFactory emptyFactory = new EmptyExecutorFactory(columns);
-
-        PipelineFragment innerFragment = new PipelineFragment(pipelineFragment.getParallelism(), current.getInner());
-        ExecutorFactory innerExecutorFactory = visit(current, current.getInner(), innerFragment);
-
-        int buildPipelineId = pipelineIdGen++;
-
-        ExecutorFactory outerExecutorFactory = visit(current, current.getOuter(), pipelineFragment);
-
-        LocalExchange localExchange =
-            new LocalExchange(CalciteUtils.getTypes(current.getOuter().getRowType()), ImmutableList.of(),
-                LocalExchange.LocalExchangeMode.BORADCAST, innerFragment.getParallelism() == 1);
-        MaterializedJoinExecFactory joinExecutorFactory = new MaterializedJoinExecFactory(
-            current, emptyFactory, outerExecutorFactory, pipelineFragment.getParallelism());
-        //generate child's pipelineFactory
-        OutputBufferMemoryManager localBufferManager = createLocalMemoryManager();
-        LocalExchangeConsumerFactory consumerFactory =
-            new LocalExchangeConsumerFactory(joinExecutorFactory, localBufferManager, localExchange);
-        PipelineFactory innerPipelineFactory =
-            new PipelineFactory(innerExecutorFactory, consumerFactory, innerFragment.setPipelineId(buildPipelineId));
-        pipelineFactorys.add(innerPipelineFactory);
-        innerFragment.setBuildDepOnAllConsumers(true);
-        pipelineFragment.addDependency(innerPipelineFactory.getPipelineId());
-        if (forbidMultipleReadConn) {
-            pipelineFragment.getProperties().addDependencyForChildren(innerPipelineFactory.getPipelineId());
-        }
-        pipelineFragment.addChild(innerFragment);
-        return joinExecutorFactory;
     }
 
     private ExecutorFactory visitValue(LogicalValues current, PipelineFragment pipelineFragment) {

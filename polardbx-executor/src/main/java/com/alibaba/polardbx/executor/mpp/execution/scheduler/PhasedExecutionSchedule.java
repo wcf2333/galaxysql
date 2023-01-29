@@ -40,7 +40,6 @@ import com.alibaba.polardbx.executor.mpp.planner.PlanFragment;
 import com.alibaba.polardbx.executor.mpp.planner.RemoteSourceNode;
 import com.alibaba.polardbx.executor.mpp.util.ImmutableCollectors;
 import com.alibaba.polardbx.optimizer.core.rel.BKAJoin;
-import com.alibaba.polardbx.optimizer.core.rel.SemiBKAJoin;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.logical.LogicalCorrelate;
@@ -209,7 +208,7 @@ public class PhasedExecutionSchedule
 
         public Set<Integer> visit(RelNode node, int currentFragmentId) {
             if (node instanceof Join) {
-                if (node instanceof BKAJoin || node instanceof SemiBKAJoin) {
+                if (node instanceof BKAJoin) {
                     //针对于BKAJoin，我们先执行outer, 在执行inner的
                     RelNode inner = ((Join) node).getInner();
                     RelNode outer = ((Join) node).getOuter();

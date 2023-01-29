@@ -16,7 +16,6 @@
 
 package com.alibaba.polardbx.optimizer.index;
 
-import com.alibaba.polardbx.optimizer.OptimizerContext;
 import com.alibaba.polardbx.optimizer.PlannerContext;
 import com.alibaba.polardbx.optimizer.config.meta.CostModelWeight;
 import com.alibaba.polardbx.optimizer.config.meta.DrdsRelMdSelectivity;
@@ -25,13 +24,11 @@ import com.alibaba.polardbx.optimizer.config.table.IndexMeta;
 import com.alibaba.polardbx.optimizer.config.table.TableMeta;
 import com.alibaba.polardbx.optimizer.config.table.statistic.StatisticManager;
 import com.alibaba.polardbx.optimizer.config.table.statistic.StatisticResult;
-import com.alibaba.polardbx.optimizer.config.table.statistic.inf.StatisticService;
 import com.alibaba.polardbx.optimizer.core.planner.rule.AccessPathRule;
 import com.alibaba.polardbx.optimizer.core.planner.rule.util.CBOUtil;
 import com.alibaba.polardbx.optimizer.core.rel.CheckMysqlIndexNLJoinRelVisitor;
 import com.alibaba.polardbx.optimizer.core.rel.Gather;
 import com.alibaba.polardbx.optimizer.core.rel.LogicalView;
-import com.alibaba.polardbx.optimizer.core.rel.MaterializedSemiJoin;
 import com.alibaba.polardbx.optimizer.core.rel.MysqlAgg;
 import com.alibaba.polardbx.optimizer.core.rel.MysqlHashJoin;
 import com.alibaba.polardbx.optimizer.core.rel.MysqlIndexNLJoin;
@@ -40,7 +37,6 @@ import com.alibaba.polardbx.optimizer.core.rel.MysqlNLJoin;
 import com.alibaba.polardbx.optimizer.core.rel.MysqlSemiHashJoin;
 import com.alibaba.polardbx.optimizer.core.rel.MysqlSemiIndexNLJoin;
 import com.alibaba.polardbx.optimizer.core.rel.MysqlTableScan;
-import com.alibaba.polardbx.optimizer.core.rel.SemiBKAJoin;
 import com.google.common.collect.ImmutableList;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.volcano.RelSubset;
@@ -119,13 +115,7 @@ public class IndexUtil {
             break;
         case SEMI:
         case ANTI:
-            if (join instanceof SemiBKAJoin) {
-                lookupRight = true;
-                break;
-            } else if (join instanceof MaterializedSemiJoin) {
-                lookupRight = false;
-                break;
-            } else if (join instanceof MysqlSemiIndexNLJoin) {
+            if (join instanceof MysqlSemiIndexNLJoin) {
                 lookupRight = true;
                 break;
             }

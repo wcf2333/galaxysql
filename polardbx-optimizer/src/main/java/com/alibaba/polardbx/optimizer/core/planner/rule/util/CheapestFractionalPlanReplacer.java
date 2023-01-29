@@ -22,7 +22,6 @@ import com.alibaba.polardbx.optimizer.core.rel.HashAgg;
 import com.alibaba.polardbx.optimizer.core.rel.HashGroupJoin;
 import com.alibaba.polardbx.optimizer.core.rel.HashJoin;
 import com.alibaba.polardbx.optimizer.core.rel.Limit;
-import com.alibaba.polardbx.optimizer.core.rel.MaterializedSemiJoin;
 import com.alibaba.polardbx.optimizer.core.rel.MemSort;
 import com.alibaba.polardbx.optimizer.core.rel.NLJoin;
 import com.alibaba.polardbx.optimizer.core.rel.SemiHashJoin;
@@ -149,7 +148,7 @@ public class CheapestFractionalPlanReplacer {
                     result.add(1.0);
                 }
             }
-        } else if (rel instanceof HashGroupJoin || rel instanceof MaterializedSemiJoin
+        } else if (rel instanceof HashGroupJoin
             || rel instanceof SortMergeJoin || rel instanceof SemiSortMergeJoin) {
             result.add(1.0);
             result.add(1.0);

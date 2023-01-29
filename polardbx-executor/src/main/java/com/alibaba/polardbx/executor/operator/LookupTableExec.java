@@ -17,7 +17,6 @@
 package com.alibaba.polardbx.executor.operator;
 
 import com.alibaba.polardbx.executor.chunk.Chunk;
-import com.alibaba.polardbx.optimizer.memory.MemoryAllocatorCtx;
 
 public interface LookupTableExec extends ResumeExec, Executor {
     void updateLookupPredicate(Chunk chunk);

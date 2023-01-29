@@ -36,7 +36,6 @@ import com.alibaba.polardbx.optimizer.core.rel.BaseTableOperation;
 import com.alibaba.polardbx.optimizer.core.rel.Limit;
 import com.alibaba.polardbx.optimizer.core.rel.LogicalView;
 import com.alibaba.polardbx.optimizer.core.rel.MergeSort;
-import com.alibaba.polardbx.optimizer.core.rel.SemiBKAJoin;
 import com.alibaba.polardbx.optimizer.core.rel.mpp.MppExchange;
 import com.alibaba.polardbx.optimizer.workload.WorkloadUtil;
 import org.apache.calcite.plan.RelOptUtil;
@@ -156,7 +155,7 @@ public class PlanFragmenter {
 
         protected RelNode visitChildren(RelNode rel, FragmentProperties properties) {
 
-            if (rel instanceof BKAJoin || rel instanceof SemiBKAJoin) {
+            if (rel instanceof BKAJoin) {
                 //对于BKAJoin，我们先遍历outer端，直接忽略遍历inner端
                 Join join = (Join) rel;
                 int outerIndex = join.getOuter() == join.getInput(0) ? 0 : 1;
@@ -738,7 +737,7 @@ public class PlanFragmenter {
                 }
                 visit(rel.getInput(0));
             } else if (rel instanceof Join) {
-                if (rel instanceof BKAJoin || rel instanceof SemiBKAJoin) {
+                if (rel instanceof BKAJoin) {
                     // Schedule outer source firstly, then inner source
                     RelNode outer = ((Join) rel).getOuter();
                     visit(outer);

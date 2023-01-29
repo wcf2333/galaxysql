@@ -46,7 +46,6 @@ import com.alibaba.polardbx.optimizer.core.dialect.DbType;
 import com.alibaba.polardbx.optimizer.core.join.EquiJoinUtils;
 import com.alibaba.polardbx.optimizer.core.join.LookupEquiJoinKey;
 import com.alibaba.polardbx.optimizer.core.join.LookupPredicate;
-import com.alibaba.polardbx.optimizer.core.join.LookupPredicateBuilder;
 import com.alibaba.polardbx.optimizer.core.planner.Planner;
 import com.alibaba.polardbx.optimizer.core.planner.SqlConverter;
 import com.alibaba.polardbx.optimizer.core.planner.Xplanner.RelToXPlanConverter;
@@ -1193,16 +1192,8 @@ public class LogicalView extends TableScan {
             List<LookupEquiJoinKey> joinKeys =
                 EquiJoinUtils.buildLookupEquiJoinKeys(join, join.getOuter(), join.getInner(),
                     (RexCall) join.getCondition(), join.getJoinType(), true);
-            LookupPredicate predicate = new LookupPredicateBuilder(join, new ArrayList<>()).build(joinKeys);
-            SqlNode lookupPredicate = predicate.explain();
 
             SqlNode filter = ((SqlSelect) nativeSql).getWhere();
-            if (filter != null) {
-                SqlOperator operator = SqlStdOperatorTable.AND;
-                filter = new SqlBasicCall(operator, new SqlNode[] {filter, lookupPredicate}, SqlParserPos.ZERO);
-            } else {
-                filter = lookupPredicate;
-            }
             ((SqlSelect) nativeSql).setWhere(filter);
         }
         ReplaceTableNameWithTestTableVisitor replaceTableNameWithTestTableVisitor =

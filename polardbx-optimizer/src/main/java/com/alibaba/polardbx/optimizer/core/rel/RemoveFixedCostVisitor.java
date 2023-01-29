@@ -40,14 +40,10 @@ public class RemoveFixedCostVisitor extends RelShuttleImpl {
             ((NLJoin) other).setFixedCost(null);
         } else if (other instanceof SemiHashJoin) {
             ((SemiHashJoin) other).setFixedCost(null);
-        } else if (other instanceof SemiBKAJoin) {
-            ((SemiBKAJoin) other).setFixedCost(null);
         } else if (other instanceof SemiSortMergeJoin) {
             ((SemiSortMergeJoin) other).setFixedCost(null);
         } else if (other instanceof SemiNLJoin) {
             ((SemiNLJoin) other).setFixedCost(null);
-        } else if (other instanceof MaterializedSemiJoin) {
-            ((MaterializedSemiJoin) other).setFixedCost(null);
         } else if (other instanceof HashGroupJoin) {
             ((HashGroupJoin) other).setFixedCost(null);
         } else if (other instanceof SortWindow) {

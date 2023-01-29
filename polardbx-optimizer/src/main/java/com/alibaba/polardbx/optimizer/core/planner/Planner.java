@@ -62,7 +62,6 @@ import com.alibaba.polardbx.optimizer.OptimizerContext;
 import com.alibaba.polardbx.optimizer.PlannerContext;
 import com.alibaba.polardbx.optimizer.config.meta.DrdsRelMetadataProvider;
 import com.alibaba.polardbx.optimizer.config.table.ColumnMeta;
-import com.alibaba.polardbx.optimizer.config.table.Field;
 import com.alibaba.polardbx.optimizer.config.table.SchemaManager;
 import com.alibaba.polardbx.optimizer.config.table.TableMeta;
 import com.alibaba.polardbx.optimizer.context.ExecutionContext;
@@ -94,7 +93,6 @@ import com.alibaba.polardbx.optimizer.core.planner.rule.LogicalJoinToBKAJoinRule
 import com.alibaba.polardbx.optimizer.core.planner.rule.LogicalJoinToHashJoinRule;
 import com.alibaba.polardbx.optimizer.core.planner.rule.LogicalJoinToNLJoinRule;
 import com.alibaba.polardbx.optimizer.core.planner.rule.LogicalJoinToSortMergeJoinRule;
-import com.alibaba.polardbx.optimizer.core.planner.rule.LogicalSemiJoinToMaterializedSemiJoinRule;
 import com.alibaba.polardbx.optimizer.core.planner.rule.LogicalSemiJoinToSemiHashJoinRule;
 import com.alibaba.polardbx.optimizer.core.planner.rule.LogicalSemiJoinToSemiNLJoinRule;
 import com.alibaba.polardbx.optimizer.core.planner.rule.LogicalSemiJoinToSemiSortMergeJoinRule;
@@ -129,7 +127,6 @@ import com.alibaba.polardbx.optimizer.core.rel.ReplaceSingleTblOrBroadcastTblWit
 import com.alibaba.polardbx.optimizer.core.rel.ReplaceTableNameWithQuestionMarkVisitor;
 import com.alibaba.polardbx.optimizer.core.rel.ToDrdsRelVisitor;
 import com.alibaba.polardbx.optimizer.core.rel.UserHintPassThroughVisitor;
-import com.alibaba.polardbx.optimizer.core.rel.ddl.BaseDdlOperation;
 import com.alibaba.polardbx.optimizer.exception.TableNotFoundException;
 import com.alibaba.polardbx.optimizer.hint.HintPlanner;
 import com.alibaba.polardbx.optimizer.hint.operator.HintCmdOperator;
@@ -1284,11 +1281,6 @@ public class Planner {
 
             if ((!enableSemiNLJoin || countVisitor.getSemiJoinCount() == 0)
                 && rule instanceof LogicalSemiJoinToSemiNLJoinRule) {
-                continue;
-            }
-
-            if ((!enableMaterializedSemiJoin || countVisitor.getSemiJoinCount() == 0)
-                && rule instanceof LogicalSemiJoinToMaterializedSemiJoinRule) {
                 continue;
             }
 

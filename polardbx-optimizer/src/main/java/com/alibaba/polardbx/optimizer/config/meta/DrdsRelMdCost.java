@@ -31,7 +31,6 @@ import com.alibaba.polardbx.optimizer.core.rel.HashJoin;
 import com.alibaba.polardbx.optimizer.core.rel.Limit;
 import com.alibaba.polardbx.optimizer.core.rel.LogicalIndexScan;
 import com.alibaba.polardbx.optimizer.core.rel.LogicalView;
-import com.alibaba.polardbx.optimizer.core.rel.MaterializedSemiJoin;
 import com.alibaba.polardbx.optimizer.core.rel.MemSort;
 import com.alibaba.polardbx.optimizer.core.rel.MergeSort;
 import com.alibaba.polardbx.optimizer.core.rel.MysqlAgg;
@@ -46,7 +45,6 @@ import com.alibaba.polardbx.optimizer.core.rel.MysqlSort;
 import com.alibaba.polardbx.optimizer.core.rel.MysqlTableScan;
 import com.alibaba.polardbx.optimizer.core.rel.MysqlTopN;
 import com.alibaba.polardbx.optimizer.core.rel.NLJoin;
-import com.alibaba.polardbx.optimizer.core.rel.SemiBKAJoin;
 import com.alibaba.polardbx.optimizer.core.rel.SemiHashJoin;
 import com.alibaba.polardbx.optimizer.core.rel.SemiNLJoin;
 import com.alibaba.polardbx.optimizer.core.rel.SemiSortMergeJoin;
@@ -55,7 +53,6 @@ import com.alibaba.polardbx.optimizer.core.rel.SortMergeJoin;
 import com.alibaba.polardbx.optimizer.core.rel.SortWindow;
 import com.alibaba.polardbx.optimizer.core.rel.TopN;
 import com.alibaba.polardbx.optimizer.index.Index;
-import com.alibaba.polardbx.optimizer.index.IndexUtil;
 import com.alibaba.polardbx.optimizer.view.ViewPlan;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptPlanner;
@@ -420,54 +417,6 @@ public class DrdsRelMdCost extends RelMdPercentageOriginalRows {
         }
     }
 
-    public RelOptCost getStartUpCost(SemiBKAJoin rel, RelMetadataQuery mq) {
-        if (rel.getFixedCost() != null) {
-            if (rel.getFixedCost().isHuge() || rel.getFixedCost().isInfinite()) {
-                return rel.getFixedCost();
-            } else {
-                return mq.getStartUpCost(rel.getLeft()).plus(rel.getFixedCost());
-            }
-        }
-        PlannerContext plannerContext = PlannerContext.getPlannerContext(rel);
-        if (plannerContext.getJoinCount() > plannerContext
-            .getParamManager().getInt(ConnectionParams.CBO_BUSHY_TREE_JOIN_LIMIT)) {
-            return mq.getStartUpCost(rel.getLeft()).plus(mq.getCumulativeCost(rel.getRight()));
-        }
-
-        RelOptCost lookupSideCost;
-        double lookupRowCount;
-        RelDataType lookupRowType;
-        double driveSideRowCount = mq.getRowCount(rel.getLeft());
-
-        lookupSideCost = rel.getLookupCost(mq);
-        lookupRowCount = mq.getRowCount(rel.getRight());
-        lookupRowType = rel.getRight().getRowType();
-
-        Index index = rel.getLookupIndex();
-        double selectivity = 1;
-        if (index != null) {
-            selectivity = index.getJoinSelectivity();
-        }
-
-        int batchSize =
-            PlannerContext.getPlannerContext(rel).getParamManager().getInt(ConnectionParams.JOIN_BLOCK_SIZE);
-
-        double io =
-            Math.ceil(
-                Math.min(driveSideRowCount, batchSize * LOOKUP_START_UP_NET) * lookupSideCost.getIo()
-                    / CostModelWeight.LOOKUP_NUM_PER_IO);
-
-        double net = Math.min(Math.ceil(driveSideRowCount / batchSize), LOOKUP_START_UP_NET)
-            * Math.ceil(batchSize * TableScanIOEstimator.estimateRowSize(
-            lookupRowType) * lookupRowCount * selectivity / CostModelWeight.NET_BUFFER_SIZE);
-
-        lookupSideCost =
-            rel.getCluster().getPlanner().getCostFactory().makeCost(lookupRowCount, lookupSideCost.getCpu(),
-                lookupSideCost.getMemory(), io, net);
-
-        return mq.getStartUpCost(rel.getLeft()).plus(lookupSideCost);
-    }
-
     public RelOptCost getStartUpCost(LogicalTableLookup rel, RelMetadataQuery mq) {
         if (rel.getFixedCost() != null) {
             if (rel.getFixedCost().isHuge() || rel.getFixedCost().isInfinite()) {
@@ -564,55 +513,6 @@ public class DrdsRelMdCost extends RelMdPercentageOriginalRows {
             }
         }
         return mq.getCumulativeCost(rel.getRight()).plus(mq.getStartUpCost(rel.getLeft())).multiplyBy(2);
-    }
-
-    public RelOptCost getStartUpCost(MaterializedSemiJoin rel, RelMetadataQuery mq) {
-        if (rel.getFixedCost() != null) {
-            if (rel.getFixedCost().isHuge() || rel.getFixedCost().isInfinite()) {
-                return rel.getFixedCost();
-            } else {
-                return rel.getFixedCost();
-            }
-        }
-        // TODO: distinct semi and anti ?
-        PlannerContext plannerContext = PlannerContext.getPlannerContext(rel);
-        if (plannerContext.getJoinCount() > plannerContext
-            .getParamManager().getInt(ConnectionParams.CBO_BUSHY_TREE_JOIN_LIMIT)) {
-            return mq.getCumulativeCost(rel.getRight());
-        }
-
-        RelOptCost lookupSideCost;
-        double lookupRowCount;
-        RelDataType lookupRowType;
-        double driveSideRowCount = mq.getRowCount(rel.getRight());
-
-        lookupSideCost = rel.getLookupCost(mq);
-        lookupRowCount = mq.getRowCount(rel.getLeft());
-        lookupRowType = rel.getLeft().getRowType();
-
-        Index index = rel.getLookupIndex();
-        double selectivity = 1;
-        if (index != null) {
-            selectivity = index.getJoinSelectivity();
-        }
-
-        int batchSize =
-            PlannerContext.getPlannerContext(rel).getParamManager().getInt(ConnectionParams.JOIN_BLOCK_SIZE);
-
-        double io =
-            Math.ceil(
-                Math.min(driveSideRowCount, batchSize * LOOKUP_START_UP_NET) * lookupSideCost.getIo()
-                    / CostModelWeight.LOOKUP_NUM_PER_IO);
-
-        double net = Math.min(Math.ceil(driveSideRowCount / batchSize), LOOKUP_START_UP_NET)
-            * Math.ceil(batchSize * TableScanIOEstimator.estimateRowSize(
-            lookupRowType) * lookupRowCount * selectivity / CostModelWeight.NET_BUFFER_SIZE);
-
-        lookupSideCost =
-            rel.getCluster().getPlanner().getCostFactory().makeCost(lookupRowCount, lookupSideCost.getCpu(),
-                lookupSideCost.getMemory(), io, net);
-
-        return mq.getCumulativeCost(rel.getRight()).plus(lookupSideCost);
     }
 
     public RelOptCost getStartUpCost(SortMergeJoin rel, RelMetadataQuery mq) {

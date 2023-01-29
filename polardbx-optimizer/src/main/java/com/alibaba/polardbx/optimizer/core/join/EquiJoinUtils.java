@@ -22,7 +22,6 @@ import com.alibaba.polardbx.optimizer.core.planner.rule.util.CBOUtil;
 import com.alibaba.polardbx.optimizer.core.rel.BKAJoin;
 import com.alibaba.polardbx.optimizer.core.rel.Gather;
 import com.alibaba.polardbx.optimizer.core.rel.LogicalIndexScan;
-import com.alibaba.polardbx.optimizer.core.rel.MaterializedSemiJoin;
 import com.alibaba.polardbx.optimizer.utils.CalciteUtils;
 import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.rel.RelNode;
@@ -130,7 +129,7 @@ public class EquiJoinUtils {
                     final RelColumnOrigin columnOrigin;
                     String lookupColumnName = null;
                     synchronized (mq) {
-                        if (join instanceof MaterializedSemiJoin || joinType == JoinRelType.RIGHT) {
+                        if (joinType == JoinRelType.RIGHT) {
                             columnOrigin = mq.getColumnOrigin(join.getLeft(), leftIndex);
                             if (columnOrigin != null) {
                                 lookupColumnName = columnOrigin.getOriginTable().getRowType().getFieldNames()

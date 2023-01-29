@@ -27,12 +27,10 @@ import com.alibaba.polardbx.optimizer.core.planner.rule.mpp.MppHashGroupJoinConv
 import com.alibaba.polardbx.optimizer.core.planner.rule.mpp.MppHashJoinConvertRule;
 import com.alibaba.polardbx.optimizer.core.planner.rule.mpp.MppLimitConvertRule;
 import com.alibaba.polardbx.optimizer.core.planner.rule.mpp.MppLogicalViewConvertRule;
-import com.alibaba.polardbx.optimizer.core.planner.rule.mpp.MppMaterializedSemiJoinConvertRule;
 import com.alibaba.polardbx.optimizer.core.planner.rule.mpp.MppMemSortConvertRule;
 import com.alibaba.polardbx.optimizer.core.planner.rule.mpp.MppMergeSortConvertRule;
 import com.alibaba.polardbx.optimizer.core.planner.rule.mpp.MppNLJoinConvertRule;
 import com.alibaba.polardbx.optimizer.core.planner.rule.mpp.MppProjectConvertRule;
-import com.alibaba.polardbx.optimizer.core.planner.rule.mpp.MppSemiBKAJoinConvertRule;
 import com.alibaba.polardbx.optimizer.core.planner.rule.mpp.MppSemiHashJoinConvertRule;
 import com.alibaba.polardbx.optimizer.core.planner.rule.mpp.MppSemiNLJoinConvertRule;
 import com.alibaba.polardbx.optimizer.core.planner.rule.mpp.MppSemiSortMergeJoinConvertRule;
@@ -421,11 +419,9 @@ public class RuleToUse {
         LogicalJoinToHashJoinRule.INSTANCE,
         LogicalJoinToHashJoinRule.OUTER_INSTANCE,
         LogicalJoinToSortMergeJoinRule.INSTANCE,
-        LogicalSemiJoinToMaterializedSemiJoinRule.INSTANCE,
         LogicalSemiJoinToSemiNLJoinRule.INSTANCE,
         LogicalSemiJoinToSemiHashJoinRule.INSTANCE,
         LogicalSemiJoinToSemiSortMergeJoinRule.INSTANCE,
-        LogicalSemiJoinToSemiBKAJoinRule.INSTANCE,
         // Agg Algorithm
         LogicalAggToSortAggRule.INSTANCE,
         LogicalAggToHashAggRule.INSTANCE,
@@ -493,9 +489,7 @@ public class RuleToUse {
         MppSortMergeJoinConvertRule.INSTANCE,
         // Semi Join Convert
         MppSemiHashJoinConvertRule.INSTANCE,
-        MppSemiBKAJoinConvertRule.INSTANCE,
         MppSemiNLJoinConvertRule.INSTANCE,
-        MppMaterializedSemiJoinConvertRule.INSTANCE,
         MppSemiSortMergeJoinConvertRule.INSTANCE,
 
         // Agg Convert
