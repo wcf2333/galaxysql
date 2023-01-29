@@ -97,7 +97,7 @@ public class LookupConditionBuilder {
         if (p.size() == 1) {
             return buildSimpleCondition(p.getColumn(0), extractSimpleValues(distinctLookupKeys));
         } else {
-            throw new RuntimeException("need to implement multi column lookup");
+            return buildMultiCondition(distinctLookupKeys);
         }
     }
 
@@ -110,6 +110,33 @@ public class LookupConditionBuilder {
             inValues.add(createLiteralValue(value));
         }
         return new SqlBasicCall(p.getOperator(), new SqlNode[] {key, inValues}, SqlParserPos.ZERO);
+    }
+
+    /**
+     * Build SQL expression via Row-expression IN or NOT IN expression  e.g. (a, b) IN ((1,2), (3,4), (5,6))
+     */
+    SqlNode buildMultiCondition(Iterable<Tuple> distinctLookupKeys) {
+        SqlNode[] names = new SqlNode[p.size()];
+        for (int i = 0; i < p.size(); i++) {
+            names[i] = p.getColumn(i);
+        }
+        SqlBasicCall left = new SqlBasicCall(TddlOperatorTable.ROW, names, SqlParserPos.ZERO);
+
+        List<SqlNode[]> allValues = new ArrayList<>();
+        for (Tuple tuple : distinctLookupKeys) {
+            SqlNode[] inValues = new SqlNode[tuple.size()];
+            for (int i = 0; i < tuple.size(); i++) {
+                inValues[i] = createLiteralValue(tuple.get(i));
+            }
+            allValues.add(inValues);
+        }
+
+        SqlNode[] rows = new SqlNode[allValues.size()];
+        for (int i = 0; i < allValues.size(); i++) {
+            rows[i] = new SqlBasicCall(TddlOperatorTable.ROW, allValues.get(i), SqlParserPos.ZERO);
+        }
+        SqlNodeList right = new SqlNodeList(Arrays.asList(rows), SqlParserPos.ZERO);
+        return new SqlBasicCall(p.getOperator(), new SqlNode[] {left, right}, SqlParserPos.ZERO);
     }
 
     private List<Object> extractSimpleValues(Iterable<Tuple> chunk) {
