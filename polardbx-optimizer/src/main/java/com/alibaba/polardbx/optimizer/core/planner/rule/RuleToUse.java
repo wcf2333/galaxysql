@@ -422,6 +422,7 @@ public class RuleToUse {
         LogicalSemiJoinToSemiNLJoinRule.INSTANCE,
         LogicalSemiJoinToSemiHashJoinRule.INSTANCE,
         LogicalSemiJoinToSemiSortMergeJoinRule.INSTANCE,
+        LogicalSemiJoinToSemiBKAJoinRule.INSTANCE,
         // Agg Algorithm
         LogicalAggToSortAggRule.INSTANCE,
         LogicalAggToHashAggRule.INSTANCE,
