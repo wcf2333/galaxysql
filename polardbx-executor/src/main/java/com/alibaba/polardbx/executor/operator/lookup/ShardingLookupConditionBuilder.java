@@ -35,13 +35,16 @@ import com.alibaba.polardbx.rule.TableRule;
 import com.alibaba.polardbx.rule.model.Field;
 import com.alibaba.polardbx.rule.model.TargetDB;
 import com.alibaba.polardbx.rule.utils.CalcParamsAttribute;
+import com.google.common.collect.Iterables;
 import org.apache.calcite.sql.SqlBasicCall;
 import org.apache.calcite.sql.SqlIdentifier;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.SqlNodeList;
 import org.apache.calcite.sql.parser.SqlParserPos;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -57,6 +60,7 @@ import static com.alibaba.polardbx.optimizer.core.join.LookupPredicateBuilder.ge
  * @see LookupConditionBuilder
  */
 public class ShardingLookupConditionBuilder extends LookupConditionBuilder {
+    private static final String DEFAULT_TABLE = "DEFAULT_TABLE";
 
     private final List<ColumnMeta> shardingColumns;
     private final int[] shardingKeyPositions;
@@ -98,7 +102,13 @@ public class ShardingLookupConditionBuilder extends LookupConditionBuilder {
                 context
             );
         }
-        throw new RuntimeException("multi key not implement");
+        return buildGeneralShardedCondition(
+            buildTupleIterable(joinKeysChunk),
+            shardingColumns,
+            ruleManager.getTableRule(v.getShardingTable()),
+            ruleManager,
+            context
+        );
     }
 
     /**
@@ -240,6 +250,164 @@ public class ShardingLookupConditionBuilder extends LookupConditionBuilder {
             shardedConditions.put(targetDB.getDbIndex(), tableConditions);
         }
         return shardedConditions;
+    }
+
+    private Map<String, Map<String, SqlNode>> buildGeneralShardedCondition(
+        Iterable<Tuple> joinKeyTuples, List<ColumnMeta> shardingKeyMetas,
+        TableRule rule, TddlRuleManager tddlRuleManager,
+        ExecutionContext context) {
+        Partitioner partitioner = OptimizerContext.getContext(context.getSchemaName()).getPartitioner();
+        final boolean shardByTable;
+        // ensured by `canShard()`
+        assert containsAllIgnoreCase(joinKeyColumnNames, rule.getDbPartitionKeys());
+
+        // If shard-by-table is unavailable, we could use a 'DEFAULT_TABLE' as placeholder to represent any
+        // table in one group, and unfold it to the actual topology later. This optimization helps deduce memory
+        // usage while number of table partitions is very high
+        shardByTable = containsAllIgnoreCase(joinKeyColumnNames, rule.getTbPartitionKeys());
+
+        Map<Integer, ParameterContext> params =
+            context.getParams() == null ? null : context.getParams().getCurrentParameter();
+
+        // reused objects
+        List<Object> shardingKeyValues = new ArrayList<>(jk.size());
+        for (int i = 0; i < shardingKeyMetas.size(); i++) {
+            shardingKeyValues.add(new Object());
+        }
+
+        // db_name -> tb_name -> list of tuples
+        Map<String, Map<String, List<Tuple>>> shardedTuples = new HashMap<>();
+        final Map<String, Set<String>> topology;
+
+        topology = rule.getActualTopology();
+
+        topology.forEach((dbKey, tables) -> {
+            Map<String, List<Tuple>> tableValues = new HashMap<>();
+            if (shardByTable) {
+                for (String table : tables) {
+                    tableValues.put(table, new ArrayList<>());
+                }
+            } else {
+                tableValues.put(DEFAULT_TABLE, new ArrayList<>());
+            }
+            shardedTuples.put(dbKey, tableValues);
+        });
+        Map<String, Object> calcParams = new HashMap<>();
+        calcParams.put(CalcParamsAttribute.SHARD_FOR_EXTRA_DB, false);
+        calcParams.put(CalcParamsAttribute.COM_DB_TB, new Object());
+        calcParams.put(CalcParamsAttribute.CONN_TIME_ZONE, context.getTimeZone());
+        calcParams.put(CalcParamsAttribute.EXECUTION_CONTEXT, context);
+        for (Tuple tuple : joinKeyTuples) {
+            for (int i = 0; i < shardingKeyPositions.length; i++) {
+                shardingKeyValues.set(i, tuple.get(shardingKeyPositions[i]));
+            }
+
+            Map<String, Comparative> comparatives =
+                Partitioner.getLookupComparative(shardingKeyValues, shardingKeyMetas);
+
+            // fullComparative保障了分表条件可见
+            Map<String, Comparative> fullComparative = partitioner.getInsertFullComparative(comparatives);
+            calcParams.put(CalcParamsAttribute.COM_DB_TB, fullComparative);
+
+            final List<TargetDB> targetDbs = tddlRuleManager.shard(v.getShardingTable(), false, false,
+                comparatives, params, calcParams, context);
+            if (targetDbs.size() != 1) {
+                throw new RuntimeException("expect one target db"); // see canShard()
+            }
+
+            for (TargetDB targetDb : targetDbs) {
+                Collection<String> targetTables;
+                if (shardByTable) {
+                    targetTables = targetDb.getTableNames();
+                } else {
+                    targetTables = Collections.singleton(DEFAULT_TABLE);
+                }
+                for (String targetTable : targetTables) {
+                    shardedTuples.compute(targetDb.getDbIndex(), (db, tableMap) -> {
+                        assert tableMap != null;
+                        tableMap.compute(targetTable, (tb, values) -> {
+                            assert values != null;
+                            values.add(tuple);
+                            return values;
+                        });
+                        return tableMap;
+                    });
+                }
+            }
+        }
+
+        // db_name -> tb_name -> condition
+        Map<String, Map<String, SqlNode>> shardedCondition = new HashMap<>();
+        shardedTuples.forEach((db, tableMap) -> {
+            Map<String, SqlNode> tableCondMap = new HashMap<>();
+            tableMap.forEach((tb, tableTuples) -> {
+                if (!tableTuples.isEmpty()) {
+                    SqlNode condition = buildCondition(tableTuples);
+                    if (condition != FALSE_CONDITION) {
+                        tableCondMap.put(tb, condition);
+                    }
+                }
+            });
+            if (!tableCondMap.isEmpty()) {
+                shardedCondition.put(db, tableCondMap);
+            }
+        });
+
+        if (!shardByTable) {
+            // unfold groups -> DEFAULT_TABLE -> sharded condition
+            // to groups -> actual tables -> sharded condition
+            Map<String, Map<String, SqlNode>> unfoldedShardedCondition = new HashMap<>(shardedCondition.size());
+            topology.forEach((dbKey, tables) -> {
+                Map<String, SqlNode> t = shardedCondition.get(dbKey);
+                if (t != null) {
+                    final SqlNode cond = t.get(DEFAULT_TABLE);
+                    Map<String, SqlNode> tableCond = new HashMap<>(tables.size());
+                    for (String table : tables) {
+                        tableCond.put(table, cond);
+                    }
+                    unfoldedShardedCondition.put(dbKey, tableCond);
+                }
+            });
+            return unfoldedShardedCondition;
+        }
+        return shardedCondition;
+    }
+
+    private SqlNode buildCondition(Collection<Tuple> joinKeyTuples) {
+        Iterable<Tuple> lookupKeys = extractLookupKeys(joinKeyTuples);
+        Collection<Tuple> distinctLookupKeys = distinctLookupKeysChunk(lookupKeys);
+
+        if (p.size() == 1) {
+            List<Object> flattedValues = distinctLookupKeys.stream()
+                .map(b -> b.get(0))
+                .collect(Collectors.toList());
+            return buildSimpleCondition(p.getColumn(0), flattedValues);
+        } else {
+            return buildMultiCondition(distinctLookupKeys);
+        }
+    }
+
+    private Collection<Tuple> distinctLookupKeysChunk(Iterable<Tuple> lookupKeysTuples) {
+        // Distinct by HashSet
+        Set<Tuple> distinctLookupKeys = new HashSet<>();
+        for (Tuple tuple : lookupKeysTuples) {
+            distinctLookupKeys.add(tuple);
+        }
+        return distinctLookupKeys;
+    }
+
+    private Iterable<Tuple> extractLookupKeys(Iterable<Tuple> joinKeysTuple) {
+        return Iterables.transform(joinKeysTuple, t -> {
+            if (t == null) {
+                return null;
+            } else {
+                Object[] data = new Object[p.size()];
+                for (int i = 0; i < p.size(); i++) {
+                    data[i] = t.get(lookupColumnPositions[i]);
+                }
+                return new Tuple(data);
+            }
+        });
     }
 
     private int[] buildShardingKeyPositions(List<ColumnMeta> shardingKeyMetas) {
